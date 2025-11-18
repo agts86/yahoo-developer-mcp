@@ -9,6 +9,12 @@ module.exports = {
     },
     moduleFileExtensions: ['ts', 'js', 'json'],
     roots: ['<rootDir>/tests'],
-    collectCoverageFrom: ['src/**/*.ts'],
+    collectCoverageFrom: [
+        'src/**/*.ts',
+        '!src/**/*.d.ts',
+        '!src/index.ts'
+    ],
+    coverageDirectory: 'coverage',
+    coverageReporters: ['text', 'lcov', 'html'],
     setupFiles: ['<rootDir>/tests/setup.ts']
 };

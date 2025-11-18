@@ -1,5 +1,7 @@
 # Yahoo Developer MCP Server
 
+[![Unit Tests](https://github.com/agts86/yahoo-developer-mcp/actions/workflows/unit-test.yml/badge.svg)](https://github.com/agts86/yahoo-developer-mcp/actions/workflows/unit-test.yml)
+
 Yahoo!ローカルサーチ / ジオコーダ / リバースジオコーダ API を Model Context Protocol (MCP) ツールとして公開する TypeScript サーバ。
 
 ## 機能

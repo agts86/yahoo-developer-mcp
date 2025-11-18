@@ -7,7 +7,9 @@
         "build": "tsc -p tsconfig.json",
         "start": "node --env-file=.env dist/index.js",
         "dev": "node --env-file=.env --loader ts-node/esm src/index.ts",
-        "test": "jest"
+        "test": "jest",
+        "test:coverage": "jest --coverage",
+        "test:watch": "jest --watch"
     },
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.22.0"
