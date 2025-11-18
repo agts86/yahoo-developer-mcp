@@ -17,6 +17,11 @@ const BASE_LOCAL_SEARCH = 'https://map.yahooapis.jp/search/local/V1/localSearch'
 const BASE_GEOCODE = 'https://map.yahooapis.jp/geocode/V1/geoCoder';
 const BASE_REVERSE_GEOCODE = 'https://map.yahooapis.jp/geocode/V1/reverseGeoCoder';
 
+/**
+ * Yahoo APIの座標文字列を緯度経度オブジェクトにパースします
+ * @param coord - Yahoo APIから返される座標文字列（"lng,lat"形式）
+ * @returns 緯度経度を含むオブジェクト
+ */
 function parseCoordinates(coord?: string): { lat?: number; lng?: number } {
   // Yahoo returns "lng,lat" or "lon,lat"
   if (!coord) return {};
@@ -27,6 +32,11 @@ function parseCoordinates(coord?: string): { lat?: number; lng?: number } {
   return { lat: isFinite(lat) ? lat : undefined, lng: isFinite(lng) ? lng : undefined };
 }
 
+/**
+ * Yahoo ローカルサーチAPIのレスポンスを平坦化して使いやすい形式に変換します
+ * @param raw - Yahoo APIからの生レスポンス
+ * @returns 変換されたローカルサーチ結果
+ */
 function flattenLocal(raw: LocalSearchResponseRaw): LocalSearchResult {
   const features = raw.Feature || [];
   const items = features.map(f => {
@@ -44,6 +54,11 @@ function flattenLocal(raw: LocalSearchResponseRaw): LocalSearchResult {
   return { items, raw };
 }
 
+/**
+ * Yahoo ジオコーダAPIのレスポンスを平坦化して使いやすい形式に変換します
+ * @param raw - Yahoo APIからの生レスポンス
+ * @returns 変換されたジオコード結果
+ */
 function flattenGeocode(raw: GeocodeResponseRaw): GeocodeResult {
   const features = raw.Feature || [];
   const items = features.map(f => {
@@ -58,6 +73,11 @@ function flattenGeocode(raw: GeocodeResponseRaw): GeocodeResult {
   return { items, raw };
 }
 
+/**
+ * Yahoo リバースジオコーダAPIのレスポンスを平坦化して使いやすい形式に変換します
+ * @param raw - Yahoo APIからの生レスポンス
+ * @returns 変換されたリバースジオコード結果
+ */
 function flattenReverse(raw: ReverseGeocodeResponseRaw): ReverseGeocodeResult {
   const features = raw.Feature || [];
   const items = features.map(f => ({
@@ -67,9 +87,23 @@ function flattenReverse(raw: ReverseGeocodeResponseRaw): ReverseGeocodeResult {
   return { items, raw };
 }
 
+/**
+ * Yahoo!デベロッパーネットワークAPIのクライアントクラス
+ * ローカルサーチ、ジオコーダ、リバースジオコーダの機能を提供します
+ */
 export class YahooClient {
+  /**
+   * YahooClientのインスタンスを作成します
+   * @param http - HTTPクライアントのインスタンス
+   */
   constructor(private http: HttpClient) {}
 
+  /**
+   * Yahoo!ローカルサーチAPIを使用してローカル検索を実行します
+   * @param params - 検索パラメータ（キーワードまたは座標）
+   * @returns ローカル検索の結果
+   * @throws キーワードまたは座標のいずれも指定されていない場合にエラーをスロー
+   */
   async localSearch(params: LocalSearchParams): Promise<LocalSearchResult> {
     if (!params.query && (params.lat === undefined || params.lng === undefined)) {
       throw new Error('localSearch requires either query or lat+lng');
@@ -100,6 +134,12 @@ export class YahooClient {
     return { ...flat, nextOffset };
   }
 
+  /**
+   * Yahoo!ジオコーダAPIを使用して住所を緯度経度に変換します
+   * @param params - ジオコーディングパラメータ（住所文字列）
+   * @returns ジオコーディングの結果
+   * @throws クエリが指定されていない場合にエラーをスロー
+   */
   async geocode(params: GeocodeParams): Promise<GeocodeResult> {
     if (!params.query) throw new Error('geocode requires query');
     const query = {
@@ -111,6 +151,12 @@ export class YahooClient {
     return flattenGeocode(raw);
   }
 
+  /**
+   * Yahoo!リバースジオコーダAPIを使用して緯度経度を住所に変換します
+   * @param params - リバースジオコーディングパラメータ（緯度・経度）
+   * @returns リバースジオコーディングの結果
+   * @throws 緯度または経度が指定されていない場合にエラーをスロー
+   */
   async reverseGeocode(params: ReverseGeocodeParams): Promise<ReverseGeocodeResult> {
     if (params.lat === undefined || params.lng === undefined) {
       throw new Error('reverseGeocode requires lat & lng');
@@ -125,6 +171,11 @@ export class YahooClient {
     return flattenReverse(raw);
   }
 
+  /**
+   * ローカルサーチパラメータのハッシュ値を生成します（ページング管理用）
+   * @param p - ローカルサーチパラメータ
+   * @returns パラメータのハッシュ文字列
+   */
   private hashParams(p: LocalSearchParams): string {
     return JSON.stringify({ q: p.query, lat: p.lat, lng: p.lng });
   }

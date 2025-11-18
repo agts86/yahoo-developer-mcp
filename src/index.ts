@@ -110,6 +110,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
+/**
+ * MCPサーバーのメイン実行関数
+ * サーバーを起動し、標準入出力トランスポートで接続します
+ */
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);

@@ -1,12 +1,32 @@
 import { HttpClient, HttpRequestOptions } from '../../src/http/HttpClient.js';
 
+/**
+ * テスト用のモックHTTPクライアント
+ * カスタムハンドラーを使用してレスポンスをシミュレートします
+ */
 export class MockHttpClient implements HttpClient {
+  /**
+   * MockHttpClientのインスタンスを作成します
+   * @param handler - リクエストを処理するハンドラー関数
+   */
   constructor(private handler: (url: string, options: HttpRequestOptions) => any | Promise<any>) {}
+  
+  /**
+   * モックHTTPリクエストを実行します
+   * @param url - リクエストURL
+   * @param options - リクエストオプション
+   * @returns モックレスポンス
+   */
   async request<T = unknown>(url: string, options: HttpRequestOptions = {}): Promise<T> {
     return this.handler(url, options) as T;
   }
 }
 
+/**
+ * 順次的にレスポンスを返すモックHTTPクライアントを作成します
+ * @param responses - 順次的に返すレスポンスの配列
+ * @returns モックHTTPクライアントのインスタンス
+ */
 export function createSequentialResponses(responses: any[]): MockHttpClient {
   let i = 0;
   return new MockHttpClient(() => {

@@ -9,5 +9,6 @@ module.exports = {
     },
     moduleFileExtensions: ['ts', 'js', 'json'],
     roots: ['<rootDir>/tests'],
-    collectCoverageFrom: ['src/**/*.ts']
+    collectCoverageFrom: ['src/**/*.ts'],
+    setupFiles: ['<rootDir>/tests/setup.ts']
 };

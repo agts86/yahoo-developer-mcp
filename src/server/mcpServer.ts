@@ -14,9 +14,19 @@ export interface ToolInvocation {
   input: any;
 }
 
+/**
+ * Model Context Protocolサーバーの実装
+ * Yahoo APIの各ツールへのアクセスを提供します
+ */
 export class MCPServer {
   private yahoo = new YahooClient(new FetchHttpClient());
 
+  /**
+   * 指定されたツールを実行します
+   * @param invocation - ツールの呼び出し情報（ツール名と入力パラメータ）
+   * @returns ツールの実行結果
+   * @throws 未知のツール名が指定された場合にエラーをスロー
+   */
   async invoke(invocation: ToolInvocation): Promise<any> {
     switch (invocation.name) {
       case 'localSearch':
