@@ -1,0 +1,14 @@
+{
+    "mcpServers": {
+        "yahoo-developer": {
+            "command": "node",
+            "args": [
+                "dist/index.js"
+            ],
+            "cwd": "path/to/yahoo-developer-mcp",
+            "env": {
+                "YAHOO_APP_ID": "your_yahoo_app_id_here"
+            }
+        }
+    }
+}
