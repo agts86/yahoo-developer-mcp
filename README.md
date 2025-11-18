@@ -8,6 +8,16 @@ Yahoo!ローカルサーチ / ジオコーダ / リバースジオコーダ API 
 - リバースジオコーダ: 座標から住所取得
 - ページング: 初回10件、同条件連続呼び出しで次10件。`reset` でリセット。
 
+## システム要件
+- Node.js >= 18
+- pnpm (推奨) または npm
+
+## 主要依存関係
+- `@modelcontextprotocol/sdk`: MCP フレームワーク
+- `dotenv`: 環境変数管理
+- `typescript`: TypeScript コンパイラ
+- `jest`: テストフレームワーク
+
 ## 環境変数
 `.env` に `YAHOO_APP_ID` を設定:
 ```
@@ -53,7 +63,7 @@ pnpm dev
 ## MCP ツール概要
 | Tool | Name | Params | 説明 |
 |------|------|--------|------|
-| Local Search | localSearch | query? lat? lng? sessionId? reset? offset? | キーワードまたは座標検索。ページングは内部管理。|
+| Local Search | localSearch | query? lat? lng? sessionId? reset? offset? results? | キーワードまたは座標検索。ページングは内部管理。|
 | Geocode | geocode | query | 住所->座標 |
 | Reverse Geocode | reverseGeocode | lat lng | 座標->住所 |
 
@@ -69,3 +79,67 @@ pnpm test
 
 ## 差し替え
 HTTPクライアントは抽象化済み。`fetch` 実装から将来 `axios` へ容易に差し替え可能。
+
+## API詳細ドキュメント
+
+### Local Search Tool
+**パラメータ:**
+- `query` (string, optional): キーワード検索文字列
+- `lat` (number, optional): 座標検索の緯度
+- `lng` (number, optional): 座標検索の経度
+- `sessionId` (string, optional): ページング継続用セッションID
+- `offset` (number, optional): 明示的オフセット指定 (0-based)
+- `reset` (boolean, optional): ページングリセット
+- `results` (number, optional): カスタムページサイズ (デフォルト: 10)
+
+**レスポンス例:**
+```json
+{
+  "items": [
+    {
+      "name": "スターバックス 新宿店",
+      "address": "東京都新宿区新宿3-38-1",
+      "lat": 35.689521,
+      "lng": 139.691706,
+      "category": "カフェ",
+      "tel": "03-1234-5678"
+    }
+  ],
+  "nextOffset": 10
+}
+```
+
+### Geocode Tool
+**パラメータ:**
+- `query` (string, required): 住所文字列
+
+**レスポンス例:**
+```json
+{
+  "items": [
+    {
+      "address": "東京都新宿区新宿3-38-1",
+      "lat": 35.689521,
+      "lng": 139.691706,
+      "name": "新宿駅前"
+    }
+  ]
+}
+```
+
+### Reverse Geocode Tool
+**パラメータ:**
+- `lat` (number, required): 緯度
+- `lng` (number, required): 経度
+
+**レスポンス例:**
+```json
+{
+  "items": [
+    {
+      "address": "東京都新宿区新宿3-38-1",
+      "name": "東京都新宿区新宿"
+    }
+  ]
+}
+```
