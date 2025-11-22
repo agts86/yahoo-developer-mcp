@@ -34,7 +34,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_29AE0EA57A7940C3A9AB8917F756A3C0 }}/agts86/yahoo-developer-mcp:${{ github.sha }}
+          tags: ghcr.io/${{ github.repository_owner }}/yahoo-developer-mcp:${{ github.sha }}
           file: ./Dockerfile
 
   deploy:
@@ -60,5 +60,5 @@ jobs:
         with:
           app-name: 'yahoo-developer'
           slot-name: 'Production'
-          images: 'ghcr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_29AE0EA57A7940C3A9AB8917F756A3C0 }}/agts86/yahoo-developer-mcp:${{ github.sha }}'
+          images: 'ghcr.io/${{ github.repository_owner }}/yahoo-developer-mcp:${{ github.sha }}'
           
