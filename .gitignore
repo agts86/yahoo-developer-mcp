@@ -15,7 +15,6 @@ dist/
 
 # IDE files
 .idea/
-.vscode/
 *.swp
 *.swo
 *.tmp

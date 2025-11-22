@@ -10,6 +10,8 @@
         "strict": true,
         "skipLibCheck": true,
         "resolveJsonModule": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
         "types": [
             "node",
             "jest"

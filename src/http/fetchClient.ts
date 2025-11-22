@@ -22,6 +22,17 @@ function buildUrl(base: string, query?: Record<string, string | number | boolean
  */
 export class FetchHttpClient implements HttpClient {
   /**
+   * GETリクエストを送信します
+   * @param url - リクエストURL
+   * @param options - リクエストオプション（methodは自動的にGETに設定）
+   * @returns レスポンスデータ
+   * @throws HTTPエラーが発生した場合にHttpErrorをスロー
+   */
+  async get<T = unknown>(url: string, options: Omit<HttpRequestOptions, 'method'> = {}): Promise<T> {
+    return this.request<T>(url, { ...options, method: 'GET' });
+  }
+
+  /**
    * HTTPリクエストを送信し、レスポンスを取得します
    * @param url - リクエストURL
    * @param options - リクエストオプション

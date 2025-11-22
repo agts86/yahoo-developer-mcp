@@ -1,0 +1,26 @@
+# ローカル開発用Dockerfile
+FROM node:22-alpine
+
+# 作業ディレクトリを設定
+WORKDIR /app
+
+# pnpmをグローバルインストール
+RUN npm install -g pnpm
+
+# package.jsonとpnpm-lock.yamlを先にコピー（キャッシュ効率化）
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+# 依存関係をインストール
+RUN pnpm install
+
+# 環境変数ファイルをコピー（存在する場合）
+COPY .env* ./
+
+# ソースコードをコピー
+COPY . .
+
+# ポート3000を公開
+EXPOSE 3000
+
+# 開発用の起動コマンド（ホットリロード対応）
+CMD ["sh", "-c", "if [ -f .env ]; then MCP_MODE=http node --env-file=.env --loader ts-node/esm src/main.ts; else MCP_MODE=http node --loader ts-node/esm src/main.ts; fi"]

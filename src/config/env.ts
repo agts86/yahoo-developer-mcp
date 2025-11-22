@@ -1,3 +1,7 @@
+/**
+ * アプリケーション設定インターフェイス
+ * 環境変数から読み込まれる設定値を定義します
+ */
 export interface AppConfig {
   yahooAppId: string;
 }

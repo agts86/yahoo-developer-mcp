@@ -1,13 +1,24 @@
 {
     "mcpServers": {
-        "yahoo-developer": {
+        "yahoo-developer-stdio": {
             "command": "node",
             "args": [
-                "dist/index.js"
+                "--env-file=.env",
+                "dist/main.js"
             ],
             "cwd": "path/to/yahoo-developer-mcp",
             "env": {
-                "YAHOO_APP_ID": "your_yahoo_app_id_here"
+                "MCP_MODE": "stdio"
+            }
+        },
+        "yahoo-developer-http": {
+            "transport": {
+                "type": "http",
+                "baseUrl": "http://localhost:3000/mcp"
+            },
+            "auth": {
+                "type": "bearer",
+                "token": "your_yahoo_app_id_here"
             }
         }
     }

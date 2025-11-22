@@ -1,0 +1,29 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: yahoo-mcp-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      # ソースコードのホットリロード用
+      - ./src:/app/src
+      - ./package.json:/app/package.json
+      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml
+      - ./tsconfig.json:/app/tsconfig.json
+      # node_modulesはDockerコンテナ内のものを使用
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - MCP_MODE=http
+      - PORT=3000
+      # 環境変数ファイルから読み込み
+      - YAHOO_APP_ID=${YAHOO_APP_ID:-your_app_id_here}
+    restart: unless-stopped
+    # ログ設定
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

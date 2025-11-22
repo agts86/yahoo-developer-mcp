@@ -4,7 +4,8 @@ export interface HttpRequestOptions extends Omit<RequestInit, 'body'> {
 }
 
 export interface HttpClient {
-  request<T = unknown>(url: string, options?: HttpRequestOptions): Promise<T>;
+  request<T = any>(url: string, options?: HttpRequestOptions): Promise<T>;
+  get<T = any>(url: string, options?: Omit<HttpRequestOptions, 'method'>): Promise<T>;
 }
 
 /**

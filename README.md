@@ -33,16 +33,15 @@ pnpm build
 pnpm dev
 ```
 
-## GitHub Copilot での使用
+## MCP クライアントでの使用
 
+### Stdio モード (従来の方式)
 1. プロジェクトをビルド:
    ```
    pnpm build
    ```
 
-2. `settings.sample.json` をコピーして GitHub Copilot の設定に追加:
-   - Windows: `%APPDATA%\GitHub Copilot\settings.json`
-   - macOS: `~/Library/Application Support/GitHub Copilot/settings.json`
+2. `settings.sample.json` をコピーして MCP クライアントの設定に追加:
 
 3. `settings.json` 内で以下を設定:
    ```json
@@ -50,17 +49,41 @@ pnpm dev
      "mcpServers": {
        "yahoo-developer": {
          "command": "node",
-         "args": ["dist/index.js"],
+         "args": ["--env-file=.env", "dist/main.js"],
          "cwd": "/path/to/yahoo-developer-mcp",
          "env": {
-           "YAHOO_APP_ID": "your_actual_yahoo_app_id"
+           "MCP_MODE": "stdio"
          }
        }
      }
    }
    ```
 
-4. GitHub Copilot を再起動して MCP ツールを使用開始
+### HTTP モード (推奨)
+1. HTTPサーバーを起動:
+   ```
+   pnpm start:http
+   ```
+
+2. MCP クライアントで以下を設定:
+   ```json
+   {
+     "mcpServers": {
+       "yahoo-developer": {
+         "transport": {
+           "type": "http",
+           "baseUrl": "http://localhost:3000/mcp"
+         },
+         "auth": {
+           "type": "bearer",
+           "token": "your_yahoo_app_id"
+         }
+       }
+     }
+   }
+   ```
+
+3. MCP クライアントを再起動して MCP ツールを使用開始
 
 ## MCP ツール概要
 | Tool | Name | Params | 説明 |

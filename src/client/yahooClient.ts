@@ -65,7 +65,7 @@ function flattenGeocode(raw: GeocodeResponseRaw): GeocodeResult {
     const coord = parseCoordinates(f.Geometry?.Coordinates);
     return {
       name: f.Name,
-      address: f.Property?.Address ?? f.Name,
+      address: f.Property?.Address ?? f.Name ?? '',
       lat: coord.lat,
       lng: coord.lng
     };
