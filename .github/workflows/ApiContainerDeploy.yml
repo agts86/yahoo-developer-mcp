@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy container app to Azure Web App - yahoo-developer-mcp
+name: Build and deploy container app to Azure Web App - yahoo-developer
 
 on:
   push:
@@ -34,7 +34,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/yahoo-developer-mcp:${{ github.sha }}
+          tags: ghcr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_29AE0EA57A7940C3A9AB8917F756A3C0 }}/agts86/yahoo-developer-mcp:${{ github.sha }}
           file: ./Dockerfile
 
   deploy:
@@ -50,9 +50,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.clientId }}
-          tenant-id: ${{ secrets.tenantId }}
-          subscription-id: ${{ secrets.subscriptionId }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_30BCAF04868E4F9D8EB4B4EEE9BD8637 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_A27AA9C3AB23435A84A494A8BF7E2727 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_70041470D69D4E9DB75C1F16C7699ECF }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -60,6 +60,5 @@ jobs:
         with:
           app-name: 'yahoo-developer'
           slot-name: 'Production'
-          images: 'ghcr.io/${{ github.repository_owner }}/yahoo-developer-mcp:${{ github.sha }}'
-
+          images: 'ghcr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_29AE0EA57A7940C3A9AB8917F756A3C0 }}/agts86/yahoo-developer-mcp:${{ github.sha }}'
           
