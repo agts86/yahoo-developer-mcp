@@ -32,10 +32,10 @@ jobs:
       - name: Build and push container image to registry
         uses: docker/build-push-action@v3
         with:
-          context: ./API
+          context: .
           push: true
           tags: ghcr.io/test/agts86/yahoo-develper:${{ github.sha }}
-          file: ./API/Dockerfile
+          file: ./Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
