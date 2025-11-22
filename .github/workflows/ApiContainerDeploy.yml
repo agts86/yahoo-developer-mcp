@@ -58,7 +58,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'yahoo-developer-mcp'
+          app-name: 'yahoo-developer'
           slot-name: 'Production'
           images: 'ghcr.io/${{ github.repository_owner }}/yahoo-developer-mcp:${{ github.sha }}'
 
