@@ -20,6 +20,16 @@ export class MockHttpClient implements HttpClient {
   async request<T = unknown>(url: string, options: HttpRequestOptions = {}): Promise<T> {
     return this.handler(url, options) as T;
   }
+
+  /**
+   * モックHTTP GETリクエストを実行します
+   * @param url - リクエストURL
+   * @param options - リクエストオプション
+   * @returns モックレスポンス
+   */
+  async get<T = unknown>(url: string, options: Omit<HttpRequestOptions, 'method'> = {}): Promise<T> {
+    return this.handler(url, { ...options, method: 'GET' }) as T;
+  }
 }
 
 /**

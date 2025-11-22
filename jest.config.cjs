@@ -1,8 +1,15 @@
 module.exports = {
     testEnvironment: 'node',
-    extensionsToTreatAsEsm: ['.ts'],
     transform: {
-        '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: 'tsconfig.json', useESM: true }]
+        '^.+\\.ts$': ['ts-jest', { 
+            tsconfig: {
+                target: 'ES2020',
+                module: 'CommonJS'
+            },
+            diagnostics: {
+                ignoreCodes: [151002]
+            }
+        }]
     },
     moduleNameMapper: {
         '^(\\.{1,2}/.*)\\.js$': '$1'
