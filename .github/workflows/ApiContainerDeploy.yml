@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy container app to Azure Web App - yahoo-develper
+name: Build and deploy container app to Azure Web App - yahoo-developer-mcp
 
 on:
   push:
@@ -34,7 +34,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/test/agts86/yahoo-develper:${{ github.sha }}
+          tags: ghcr.io/${{ github.repository_owner }}/yahoo-developer-mcp:${{ github.sha }}
           file: ./Dockerfile
 
   deploy:
@@ -58,8 +58,8 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'yahoo-develper'
+          app-name: 'yahoo-developer-mcp'
           slot-name: 'Production'
-          images: 'ghcr.io/test/agts86/yahoo-develper:${{ github.sha }}'
+          images: 'ghcr.io/${{ github.repository_owner }}/yahoo-developer-mcp:${{ github.sha }}'
 
           
