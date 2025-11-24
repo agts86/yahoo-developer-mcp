@@ -1,10 +1,4 @@
-import { Injectable, Logger, OnApplicationBootstrap, HttpException, HttpStatus } from '@nestjs/common';
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { 
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
+import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { LocalSearchService } from '../tools/local-search.service.js';
 import { GeocodeService } from '../tools/geocode.service.js';
 import { ReverseGeocodeService } from '../tools/reverse-geocode.service.js';
@@ -12,12 +6,11 @@ import { AppConfigService } from '../config/config.js';
 
 /**
  * MCPサーバー統合サービス
- * NestJSアプリケーション内でMCPサーバーを管理し、Stdioモードをサポートします
+ * HTTPモード専用のMCPツール実行サービス
  */
 @Injectable()
 export class McpService {
   private readonly logger = new Logger(McpService.name);
-  private server?: Server;
 
   constructor(
     private readonly localSearchService: LocalSearchService,
@@ -25,130 +18,6 @@ export class McpService {
     private readonly reverseGeocodeService: ReverseGeocodeService,
     private readonly configService: AppConfigService,
   ) {}
-
-  /**
-   * Stdio MCPサーバーを起動します（既存互換性用）
-   */
-  async startStdioServer(): Promise<void> {
-    this.logger.log('Starting MCP Stdio Server...');
-    
-    this.server = new Server(
-      {
-        name: 'yahoo-developer',
-        version: '0.1.0',
-      },
-      {
-        capabilities: {
-          tools: {},
-        },
-      }
-    );
-
-    // ツール一覧ハンドラー
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => {
-      return {
-        tools: [
-          {
-            name: 'localSearch',
-            description: 'Yahoo!ローカルサーチAPI - キーワードまたは座標でローカル検索（10件ページング対応）',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                query: { type: 'string', description: 'キーワード検索文字列' },
-                lat: { type: 'number', description: '緯度（座標検索の場合）' },
-                lng: { type: 'number', description: '経度（座標検索の場合）' },
-                sessionId: { type: 'string', description: 'ページング継続用セッションID' },
-                offset: { type: 'number', description: '明示的オフセット指定' },
-                reset: { type: 'boolean', description: 'ページングリセット' },
-                results: { type: 'number', description: 'カスタムページサイズ（デフォルト10）' }
-              }
-            }
-          },
-          {
-            name: 'geocode',
-            description: 'Yahoo!ジオコーダAPI - 住所文字列から座標を取得',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                query: { type: 'string', description: '住所文字列' }
-              },
-              required: ['query']
-            }
-          },
-          {
-            name: 'reverseGeocode',
-            description: 'Yahoo!リバースジオコーダAPI - 座標から住所を取得',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                lat: { type: 'number', description: '緯度' },
-                lng: { type: 'number', description: '経度' }
-              },
-              required: ['lat', 'lng']
-            }
-          }
-        ]
-      };
-    });
-
-    // ツール実行ハンドラー
-    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-      const { name, arguments: args } = request.params;
-
-      try {
-        let result;
-        switch (name) {
-          case 'localSearch':
-            result = await this.localSearchService.execute(args as any);
-            break;
-          case 'geocode':
-            result = await this.geocodeService.execute(args as any);
-            break;
-          case 'reverseGeocode':
-            result = await this.reverseGeocodeService.execute(args as any);
-            break;
-          default:
-            throw new Error(`Unknown tool: ${name}`);
-        }
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2)
-            }
-          ]
-        };
-      } catch (error) {
-        this.logger.error(`Tool execution error: ${error}`, error);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Error: ${error instanceof Error ? error.message : String(error)}`
-            }
-          ],
-          isError: true
-        };
-      }
-    });
-
-    // Stdioトランスポートで接続
-    const transport = new StdioServerTransport();
-    await this.server.connect(transport);
-    
-    this.logger.log('MCP Stdio Server started successfully');
-  }
-
-  /**
-   * MCPサーバーを停止します
-   */
-  async stop(): Promise<void> {
-    if (this.server) {
-      // MCP SDKに停止メソッドがある場合の処理
-      this.logger.log('MCP Server stopped');
-    }
-  }
 
   // --- HTTP MCP プロトコル処理メソッド ---
 
@@ -280,7 +149,7 @@ export class McpService {
   /**
    * ツール名によるツール実行（HTTP用）
    */
-  async executeToolByName(toolName: string, input: any, yahooAppId?: string) {
+  async executeToolByName(toolName: string, input: any, yahooAppId: string) {
     switch (toolName) {
       case 'localSearch':
         return await this.localSearchService.execute(input, yahooAppId);

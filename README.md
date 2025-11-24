@@ -2,7 +2,7 @@
 
 [![Unit Tests](https://github.com/agts86/yahoo-developer-mcp/actions/workflows/unit-test.yml/badge.svg)](https://github.com/agts86/yahoo-developer-mcp/actions/workflows/unit-test.yml)
 
-Yahoo!ローカルサーチ / ジオコーダ / リバースジオコーダ API を Model Context Protocol (MCP) ツールとして公開する TypeScript サーバ。
+Yahoo!ローカルサーチ / ジオコーダ / リバースジオコーダ API を Model Context Protocol (MCP) ツールとして公開する HTTP サーバー。
 
 ## 機能
 - ローカルサーチ: キーワード or 座標ベース検索 + 10件ページング
@@ -16,53 +16,28 @@ Yahoo!ローカルサーチ / ジオコーダ / リバースジオコーダ API 
 
 ## 主要依存関係
 - `@modelcontextprotocol/sdk`: MCP フレームワーク
-- `dotenv`: 環境変数管理
+- `@nestjs/core`: NestJS フレームワーク
+- `@nestjs/platform-fastify`: Fastify プラットフォーム
 - `typescript`: TypeScript コンパイラ
 - `jest`: テストフレームワーク
 
-## 環境変数
-`.env` に `YAHOO_APP_ID` を設定:
-```
-YAHOO_APP_ID=your_app_id
-```
-
 ## 起動
-```
+```bash
 pnpm install
 pnpm build
+pnpm start
+```
+
+または開発モード:
+```bash
 pnpm dev
 ```
 
 ## MCP クライアントでの使用
 
-### Stdio モード (従来の方式)
-1. プロジェクトをビルド:
-   ```
-   pnpm build
-   ```
-
-2. `settings.sample.json` をコピーして MCP クライアントの設定に追加:
-
-3. `settings.json` 内で以下を設定:
-   ```json
-   {
-     "mcpServers": {
-       "yahoo-developer": {
-         "command": "node",
-         "args": ["--env-file=.env", "dist/main.js"],
-         "cwd": "/path/to/yahoo-developer-mcp",
-         "env": {
-           "MCP_MODE": "stdio"
-         }
-       }
-     }
-   }
-   ```
-
-### HTTP モード (推奨)
 1. HTTPサーバーを起動:
-   ```
-   pnpm start:http
+   ```bash
+   pnpm start
    ```
 
 2. MCP クライアントで以下を設定:

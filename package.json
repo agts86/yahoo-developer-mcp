@@ -5,12 +5,8 @@
     "type": "module",
     "scripts": {
         "build": "tsc -p tsconfig.json",
-        "start": "node --env-file=.env dist/main.js",
-        "start:http": "MCP_MODE=http node --env-file=.env dist/main.js",
-        "start:stdio": "MCP_MODE=stdio node --env-file=.env dist/main.js",
-        "dev": "node --env-file=.env --loader ts-node/esm src/main.ts",
-        "dev:http": "MCP_MODE=http node --env-file=.env --loader ts-node/esm src/main.ts",
-        "dev:stdio": "MCP_MODE=stdio node --env-file=.env --loader ts-node/esm src/main.ts",
+        "start": "node dist/main.js",
+        "dev": "node --loader ts-node/esm src/main.ts",
         "test": "jest",
         "test:coverage": "jest --coverage",
         "test:watch": "jest --watch"

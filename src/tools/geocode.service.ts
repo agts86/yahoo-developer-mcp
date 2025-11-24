@@ -18,10 +18,10 @@ export class GeocodeService {
   /**
    * Yahoo!ジオコーダAPIツールの実行関数
    * @param input ジオコーディングの入力パラメータ
-   * @param yahooAppId 動的にYahoo API Keyを指定（ヘッダー認証用）
+   * @param yahooAppId Yahoo API Key
    * @returns ジオコーディングの結果
    */
-  async execute(input: GeocodeToolInput, yahooAppId?: string): Promise<GeocodeToolOutput> {
+  async execute(input: GeocodeToolInput, yahooAppId: string): Promise<GeocodeToolOutput> {
     this.logger.debug(`Geocode Tool Input: ${JSON.stringify(input)}`);
     
     try {

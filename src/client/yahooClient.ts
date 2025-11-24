@@ -1,5 +1,4 @@
 import { HttpClient } from '../http/HttpClient.js';
-import { config } from '../config/env.js';
 import {
   LocalSearchParams,
   LocalSearchResult,
@@ -101,10 +100,11 @@ export class YahooClient {
   /**
    * Yahoo!ローカルサーチAPIを使用してローカル検索を実行します
    * @param params - 検索パラメータ（キーワードまたは座標）
+   * @param appId - Yahoo APP ID
    * @returns ローカル検索の結果
    * @throws キーワードまたは座標のいずれも指定されていない場合にエラーをスロー
    */
-  async localSearch(params: LocalSearchParams): Promise<LocalSearchResult> {
+  async localSearch(params: LocalSearchParams, appId: string): Promise<LocalSearchResult> {
     if (!params.query && (params.lat === undefined || params.lng === undefined)) {
       throw new Error('localSearch requires either query or lat+lng');
     }
@@ -120,7 +120,7 @@ export class YahooClient {
     }
 
     const query: Record<string, string | number | boolean | undefined> = {
-      appid: config.yahooAppId,
+      appid: appId,
       output: 'json',
       query: params.query,
       lat: params.lat,
@@ -137,13 +137,14 @@ export class YahooClient {
   /**
    * Yahoo!ジオコーダAPIを使用して住所を緯度経度に変換します
    * @param params - ジオコーディングパラメータ（住所文字列）
+   * @param appId - Yahoo APP ID
    * @returns ジオコーディングの結果
    * @throws クエリが指定されていない場合にエラーをスロー
    */
-  async geocode(params: GeocodeParams): Promise<GeocodeResult> {
+  async geocode(params: GeocodeParams, appId: string): Promise<GeocodeResult> {
     if (!params.query) throw new Error('geocode requires query');
     const query = {
-      appid: config.yahooAppId,
+      appid: appId,
       output: 'json',
       query: params.query
     };
@@ -154,15 +155,16 @@ export class YahooClient {
   /**
    * Yahoo!リバースジオコーダAPIを使用して緯度経度を住所に変換します
    * @param params - リバースジオコーディングパラメータ（緯度・経度）
+   * @param appId - Yahoo APP ID
    * @returns リバースジオコーディングの結果
    * @throws 緯度または経度が指定されていない場合にエラーをスロー
    */
-  async reverseGeocode(params: ReverseGeocodeParams): Promise<ReverseGeocodeResult> {
+  async reverseGeocode(params: ReverseGeocodeParams, appId: string): Promise<ReverseGeocodeResult> {
     if (params.lat === undefined || params.lng === undefined) {
       throw new Error('reverseGeocode requires lat & lng');
     }
     const query = {
-      appid: config.yahooAppId,
+      appid: appId,
       output: 'json',
       lat: params.lat,
       lon: params.lng

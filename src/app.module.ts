@@ -9,7 +9,6 @@ import { HttpModule } from './http/http.module.js';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env', '.env.local'],
     }),
     HttpModule,
     YahooModule,

@@ -18,10 +18,10 @@ export class ReverseGeocodeService {
   /**
    * Yahoo!リバースジオコーダAPIツールの実行関数
    * @param input リバースジオコーディングの入力パラメータ
-   * @param yahooAppId 動的にYahoo API Keyを指定（ヘッダー認証用）
+   * @param yahooAppId Yahoo API Key
    * @returns リバースジオコーディングの結果
    */
-  async execute(input: ReverseGeocodeToolInput, yahooAppId?: string): Promise<ReverseGeocodeToolOutput> {
+  async execute(input: ReverseGeocodeToolInput, yahooAppId: string): Promise<ReverseGeocodeToolOutput> {
     this.logger.debug(`Reverse Geocode Tool Input: ${JSON.stringify(input)}`);
     
     try {
