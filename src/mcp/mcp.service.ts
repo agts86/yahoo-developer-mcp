@@ -3,6 +3,8 @@ import { LocalSearchService } from '../tools/local-search.service.js';
 import { GeocodeService } from '../tools/geocode.service.js';
 import { ReverseGeocodeService } from '../tools/reverse-geocode.service.js';
 import { AppConfigService } from '../config/config.js';
+import { McpTool } from '../tools/tool.interface.js';
+import { McpToolWithDefinition } from '../tools/tool-definition.interface.js';
 
 /**
  * MCPサーバー統合サービス
@@ -11,13 +13,21 @@ import { AppConfigService } from '../config/config.js';
 @Injectable()
 export class McpService {
   private readonly logger = new Logger(McpService.name);
+  private readonly tools: McpToolWithDefinition[];
 
   constructor(
     private readonly localSearchService: LocalSearchService,
     private readonly geocodeService: GeocodeService,
     private readonly reverseGeocodeService: ReverseGeocodeService,
     private readonly configService: AppConfigService,
-  ) {}
+  ) {
+    // ツールを配列で管理
+    this.tools = [
+      this.localSearchService,
+      this.geocodeService,
+      this.reverseGeocodeService,
+    ];
+  }
 
   // --- HTTP MCP プロトコル処理メソッド ---
 
@@ -150,65 +160,20 @@ export class McpService {
    * ツール名によるツール実行（HTTP用）
    */
   async executeToolByName(toolName: string, input: any, yahooAppId: string) {
-    switch (toolName) {
-      case 'localSearch':
-        return await this.localSearchService.execute(input, yahooAppId);
-      case 'geocode':
-        return await this.geocodeService.execute(input, yahooAppId);
-      case 'reverseGeocode':
-        return await this.reverseGeocodeService.execute(input, yahooAppId);
-      default:
-        const error = new Error(`Unknown tool: ${toolName}`);
-        error.name = 'UnknownToolError';
-        throw error;
+    const tool = this.tools.find(t => t.name === toolName);
+    if (!tool) {
+      const error = new Error(`Unknown tool: ${toolName}`);
+      error.name = 'UnknownToolError';
+      throw error;
     }
+    return await tool.execute(input, yahooAppId);
   }
 
   /**
-   * HTTP用ツール定義を取得
+   * HTTP用ツール定義を取得（動的生成）
    */
   getHttpToolsDefinition() {
-    return [
-      {
-        name: 'localSearch',
-        description: 'Yahoo!ローカルサーチAPI - キーワードまたは座標でローカル検索（10件ページング対応）',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            query: { type: 'string', description: 'キーワード検索文字列' },
-            lat: { type: 'number', description: '緯度（座標検索の場合）' },
-            lng: { type: 'number', description: '経度（座標検索の場合）' },
-            sessionId: { type: 'string', description: 'ページング継続用セッションID' },
-            offset: { type: 'number', description: '明示的オフセット指定' },
-            reset: { type: 'boolean', description: 'ページングリセット' },
-            results: { type: 'number', description: 'カスタムページサイズ（デフォルト10）' }
-          }
-        }
-      },
-      {
-        name: 'geocode',
-        description: 'Yahoo!ジオコーダAPI - 住所文字列から座標を取得',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            query: { type: 'string', description: '住所文字列' }
-          },
-          required: ['query']
-        }
-      },
-      {
-        name: 'reverseGeocode',
-        description: 'Yahoo!リバースジオコーダAPI - 座標から住所を取得',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            lat: { type: 'number', description: '緯度' },
-            lng: { type: 'number', description: '経度' }
-          },
-          required: ['lat', 'lng']
-        }
-      }
-    ];
+    return this.tools.map(tool => tool.getDefinition());
   }
 
   /**
