@@ -1,30 +1,44 @@
-import { localSearchTool } from '../../src/tools/localSearch.js';
-import { YahooClient } from '../../src/client/yahooClient.js';
-import { createSequentialResponses } from '../mocks/mockHttpClient.js';
+import { LocalSearchService } from '../../src/tools/local-search.service.js';
+import { YahooService } from '../../src/yahoo/yahoo.service.js';
+import { FetchHttpClient } from '../../src/http/fetchClient.js';
 
-describe('localSearchTool paging behavior', () => {
-  test('nextOffset increments by 10 default', async () => {
-    const responses = [
-      { Feature: [{ Name: 'First', Geometry: { Coordinates: '139.0,35.0' }, Property: {} }] },
-      { Feature: [{ Name: 'Second', Geometry: { Coordinates: '139.1,35.1' }, Property: {} }] }
-    ];
-    const mockHttp = createSequentialResponses(responses);
-    const client = new YahooClient(mockHttp);
-    const first = await localSearchTool(client, { query: 'ramen', sessionId: 'sess' });
-    expect(first.nextOffset).toBe(10);
-    const second = await localSearchTool(client, { query: 'ramen', sessionId: 'sess' });
-    expect(second.nextOffset).toBe(20);
+// YahooServiceのモック
+const mockYahooService = {
+  localSearch: jest.fn()
+};
+
+describe('LocalSearchService', () => {
+  let service: LocalSearchService;
+
+  beforeEach(() => {
+    service = new LocalSearchService(mockYahooService as any);
+    jest.clearAllMocks();
   });
 
-  test('reset returns to first page', async () => {
-    const responses = [
-      { Feature: [{ Name: 'First', Geometry: { Coordinates: '139.0,35.0' }, Property: {} }] },
-      { Feature: [{ Name: 'Second', Geometry: { Coordinates: '139.1,35.1' }, Property: {} }] }
-    ];
-    const mockHttp = createSequentialResponses(responses);
-    const client = new YahooClient(mockHttp);
-    await localSearchTool(client, { query: 'cafe', sessionId: 'sess2' });
-    const resetPage = await localSearchTool(client, { query: 'cafe', sessionId: 'sess2', reset: true });
-    expect(resetPage.nextOffset).toBe(10);
+  test('should execute local search with yahoo app id', async () => {
+    const mockResult = {
+      items: [{ name: 'Test Location', lat: 35.0, lng: 139.0 }],
+      raw: {}
+    };
+    mockYahooService.localSearch.mockResolvedValue(mockResult);
+
+    const input = { query: 'ramen' };
+    const yahooAppId = 'test-app-id';
+    
+    const result = await service.execute(input, yahooAppId);
+    
+    expect(mockYahooService.localSearch).toHaveBeenCalledWith(input, yahooAppId);
+    expect(result).toEqual(mockResult);
+  });
+
+  test('should return tool definition', () => {
+    const definition = service.getDefinition();
+    
+    expect(definition.name).toBe('localSearch');
+    expect(definition.description).toContain('Yahoo!');
+    expect(definition.inputSchema.type).toBe('object');
+    expect(definition.inputSchema.properties).toHaveProperty('query');
+    expect(definition.inputSchema.properties).toHaveProperty('lat');
+    expect(definition.inputSchema.properties).toHaveProperty('lng');
   });
 });

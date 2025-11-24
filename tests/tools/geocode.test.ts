@@ -1,68 +1,47 @@
-import { geocodeTool } from '../../src/tools/geocode.js';
-import { YahooClient } from '../../src/client/yahooClient.js';
-import { createSequentialResponses } from '../mocks/mockHttpClient.js';
+import { GeocodeService } from '../../src/tools/geocode.service.js';
+import { YahooService } from '../../src/yahoo/yahoo.service.js';
 
-describe('geocodeTool', () => {
-  test('successfully geocodes address to coordinates', async () => {
-    const mockResponse = {
-      Feature: [{
-        Geometry: {
-          Coordinates: '139.691706,35.689521'
-        },
-        Property: {
-          Address: '東京都新宿区新宿3-38-1'
-        }
-      }]
-    };
-    
-    const mockHttp = createSequentialResponses([mockResponse]);
-    const client = new YahooClient(mockHttp);
-    
-    const result = await geocodeTool(client, { query: '東京都新宿区新宿' });
-    
-    expect(result.items).toHaveLength(1);
-    expect(result.items[0].lat).toBe(35.689521);
-    expect(result.items[0].lng).toBe(139.691706);
-    expect(result.items[0].address).toBe('東京都新宿区新宿3-38-1');
-    expect(result.raw.Feature).toHaveLength(1);
+// YahooServiceのモック
+const mockYahooService = {
+  geocode: jest.fn()
+};
+
+describe('GeocodeService', () => {
+  let service: GeocodeService;
+
+  beforeEach(() => {
+    service = new GeocodeService(mockYahooService as any);
+    jest.clearAllMocks();
   });
 
-  test('handles empty results', async () => {
-    const mockResponse = {
-      Feature: []
+  test('should execute geocode with yahoo app id', async () => {
+    const mockResult = {
+      items: [{
+        name: '東京駅',
+        address: '東京都千代田区丸の内',
+        lat: 35.681236,
+        lng: 139.767125
+      }],
+      raw: {}
     };
+    mockYahooService.geocode.mockResolvedValue(mockResult);
+
+    const input = { query: '東京駅' };
+    const yahooAppId = 'test-app-id';
     
-    const mockHttp = createSequentialResponses([mockResponse]);
-    const client = new YahooClient(mockHttp);
+    const result = await service.execute(input, yahooAppId);
     
-    const result = await geocodeTool(client, { query: '存在しない住所' });
-    
-    expect(result.items).toHaveLength(0);
-    expect(result.raw.Feature).toHaveLength(0);
+    expect(mockYahooService.geocode).toHaveBeenCalledWith(input, yahooAppId);
+    expect(result).toEqual(mockResult);
   });
 
-  test('handles multiple geocoding results', async () => {
-    const mockResponse = {
-      Feature: [
-        {
-          Geometry: { Coordinates: '139.691706,35.689521' },
-          Property: { Address: '東京都新宿区新宿3-38-1' }
-        },
-        {
-          Geometry: { Coordinates: '139.700000,35.690000' },
-          Property: { Address: '東京都新宿区新宿4-1-1' }
-        }
-      ]
-    };
+  test('should return tool definition', () => {
+    const definition = service.getDefinition();
     
-    const mockHttp = createSequentialResponses([mockResponse]);
-    const client = new YahooClient(mockHttp);
-    
-    const result = await geocodeTool(client, { query: '新宿' });
-    
-    expect(result.items).toHaveLength(2);
-    expect(result.items[0].address).toBe('東京都新宿区新宿3-38-1');
-    expect(result.items[1].address).toBe('東京都新宿区新宿4-1-1');
-    expect(result.raw.Feature).toHaveLength(2);
+    expect(definition.name).toBe('geocode');
+    expect(definition.description).toContain('Yahoo!');
+    expect(definition.inputSchema.type).toBe('object');
+    expect(definition.inputSchema.properties).toHaveProperty('query');
+    expect(definition.inputSchema.required).toContain('query');
   });
 });

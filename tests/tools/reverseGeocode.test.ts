@@ -1,85 +1,100 @@
-import { reverseGeocodeTool } from '../../src/tools/reverseGeocode.js';
-import { YahooClient } from '../../src/client/yahooClient.js';
-import { createSequentialResponses } from '../mocks/mockHttpClient.js';
+import { ReverseGeocodeService } from '../../src/tools/reverse-geocode.service.js';
+import { YahooService } from '../../src/yahoo/yahoo.service.js';
 
-describe('reverseGeocodeTool', () => {
-  test('successfully reverse geocodes coordinates to address', async () => {
-    const mockResponse = {
-      Feature: [{
-        Name: '東京都新宿区新宿',
-        Property: {
-          Address: '東京都新宿区新宿3-38-1'
-        }
-      }]
-    };
-    
-    const mockHttp = createSequentialResponses([mockResponse]);
-    const client = new YahooClient(mockHttp);
-    
-    const result = await reverseGeocodeTool(client, { lat: 35.689521, lng: 139.691706 });
-    
-    expect(result.items).toHaveLength(1);
-    expect(result.items[0].address).toBe('東京都新宿区新宿3-38-1');
-    expect(result.items[0].name).toBe('東京都新宿区新宿');
-    expect(result.raw.Feature).toHaveLength(1);
+// YahooServiceのモック
+const mockYahooService = {
+  reverseGeocode: jest.fn()
+};
+
+describe('ReverseGeocodeService', () => {
+  let service: ReverseGeocodeService;
+
+  beforeEach(() => {
+    service = new ReverseGeocodeService(mockYahooService as any);
+    jest.clearAllMocks();
   });
 
-  test('handles empty results for invalid coordinates', async () => {
-    const mockResponse = {
-      Feature: []
+  test('should execute reverse geocode with yahoo app id', async () => {
+    const mockResult = {
+      items: [{
+        name: '東京駅付近',
+        address: '東京都千代田区丸の内'
+      }],
+      raw: {}
     };
+    mockYahooService.reverseGeocode.mockResolvedValue(mockResult);
+
+    const input = { lat: 35.681236, lng: 139.767125 };
+    const yahooAppId = 'test-app-id';
     
-    const mockHttp = createSequentialResponses([mockResponse]);
-    const client = new YahooClient(mockHttp);
+    const result = await service.execute(input, yahooAppId);
     
-    const result = await reverseGeocodeTool(client, { lat: 0, lng: 0 });
-    
-    expect(result.items).toHaveLength(0);
-    expect(result.raw.Feature).toHaveLength(0);
+    expect(mockYahooService.reverseGeocode).toHaveBeenCalledWith(input, yahooAppId);
+    expect(result).toEqual(mockResult);
   });
 
-  test('handles multiple reverse geocoding results', async () => {
-    const mockResponse = {
-      Feature: [
+  test('should return tool definition', () => {
+    const definition = service.getDefinition();
+    
+    expect(definition.name).toBe('reverseGeocode');
+    expect(definition.description).toContain('Yahoo!');
+    expect(definition.inputSchema.type).toBe('object');
+    expect(definition.inputSchema.properties).toHaveProperty('lat');
+    expect(definition.inputSchema.properties).toHaveProperty('lng');
+    expect(definition.inputSchema.required).toContain('lat');
+    expect(definition.inputSchema.required).toContain('lng');
+  });
+
+  test('should handle successful reverse geocoding with multiple results', async () => {
+    const mockResult = {
+      items: [
         {
-          Name: '東京都新宿区新宿',
-          Property: { Address: '東京都新宿区新宿3-38-1' }
+          name: '東京都新宿区新宿',
+          address: '東京都新宿区新宿3-38-1'
         },
         {
-          Name: '東京都新宿区歌舞伎町',
-          Property: { Address: '東京都新宿区歌舞伎町1-1-1' }
+          name: '東京都新宿区歌舞伎町',
+          address: '東京都新宿区歌舞伎町1-1-1'
         }
-      ]
+      ],
+      raw: {
+        Feature: [
+          {
+            Name: '東京都新宿区新宿',
+            Property: { Address: '東京都新宿区新宿3-38-1' }
+          },
+          {
+            Name: '東京都新宿区歌舞伎町',
+            Property: { Address: '東京都新宿区歌舞伎町1-1-1' }
+          }
+        ]
+      }
     };
+    mockYahooService.reverseGeocode.mockResolvedValue(mockResult);
+
+    const input = { lat: 35.689521, lng: 139.691706 };
+    const yahooAppId = 'test-app-id';
     
-    const mockHttp = createSequentialResponses([mockResponse]);
-    const client = new YahooClient(mockHttp);
-    
-    const result = await reverseGeocodeTool(client, { lat: 35.689521, lng: 139.691706 });
+    const result = await service.execute(input, yahooAppId);
     
     expect(result.items).toHaveLength(2);
     expect(result.items[0].name).toBe('東京都新宿区新宿');
     expect(result.items[1].name).toBe('東京都新宿区歌舞伎町');
-    expect(result.raw.Feature).toHaveLength(2);
   });
 
-  test('handles coordinates with decimal precision', async () => {
-    const mockResponse = {
-      Feature: [{
-        Name: '東京駅',
-        Property: {
-          Address: '東京都千代田区丸の内1-9-1'
-        }
-      }]
+  test('should handle empty results for invalid coordinates', async () => {
+    const mockResult = {
+      items: [],
+      raw: { Feature: [] }
     };
+    mockYahooService.reverseGeocode.mockResolvedValue(mockResult);
+
+    const input = { lat: 0, lng: 0 };
+    const yahooAppId = 'test-app-id';
     
-    const mockHttp = createSequentialResponses([mockResponse]);
-    const client = new YahooClient(mockHttp);
+    const result = await service.execute(input, yahooAppId);
     
-    const result = await reverseGeocodeTool(client, { lat: 35.681236, lng: 139.767125 });
-    
-    expect(result.items).toHaveLength(1);
-    expect(result.items[0].address).toBe('東京都千代田区丸の内1-9-1');
-    expect(result.items[0].name).toBe('東京駅');
+    expect(result.items).toHaveLength(0);
+    expect(result.raw.Feature).toHaveLength(0);
   });
 });
