@@ -5,6 +5,14 @@ import { ReverseGeocodeService } from '../tools/reverse-geocode.service.js';
 import { AppConfigService } from '../config/config.js';
 import { McpTool } from '../tools/tool.interface.js';
 import { McpToolWithDefinition } from '../tools/tool-definition.interface.js';
+import { McpMethodHandler } from './method-handler.interface.js';
+import { 
+  InitializeHandler, 
+  NotificationsInitializedHandler, 
+  LoggingSetLevelHandler,
+  ToolsListHandler,
+  ToolsCallHandler 
+} from './handlers/method-handlers.js';
 
 /**
  * MCPサーバー統合サービス
@@ -14,6 +22,7 @@ import { McpToolWithDefinition } from '../tools/tool-definition.interface.js';
 export class McpService {
   private readonly logger = new Logger(McpService.name);
   private readonly tools: McpToolWithDefinition[];
+  private readonly methodHandlers: McpMethodHandler[];
 
   constructor(
     private readonly localSearchService: LocalSearchService,
@@ -26,6 +35,15 @@ export class McpService {
       this.localSearchService,
       this.geocodeService,
       this.reverseGeocodeService,
+    ];
+
+    // メソッドハンドラーをクラスベースで管理
+    this.methodHandlers = [
+      new InitializeHandler(),
+      new NotificationsInitializedHandler(),
+      new LoggingSetLevelHandler(),
+      new ToolsListHandler(this.tools),
+      new ToolsCallHandler(this.tools, this.configService)
     ];
   }
 
@@ -44,22 +62,13 @@ export class McpService {
    */
   private async dispatchHttpMcpMethod(message: any, authHeader?: string) {
     const method = message.method;
-
-    switch (method) {
-      case 'initialize':
-        return this.createInitializeResponse(message);
-      case 'notifications/initialized':
-        return this.handleNotificationInitialized();
-      case 'logging/setLevel':
-        return this.handleLoggingSetLevel(message);
-      case 'tools/list':
-        return this.createToolsListResponse(message);
-      case 'tools/call':
-        const yahooAppId = this.configService.extractYahooApiKey(authHeader);
-        return await this.handleHttpToolsCall(message, yahooAppId);
-      default:
-        throw this.createMethodNotFoundError(message.id, method);
+    const handler = this.methodHandlers.find(h => h.method === method);
+    
+    if (!handler) {
+      throw this.createMethodNotFoundError(message.id, method);
     }
+    
+    return await handler.handle(message, authHeader);
   }
 
   /**
