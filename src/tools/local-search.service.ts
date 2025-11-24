@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { YahooService } from '../yahoo/yahoo.service.js';
 import { LocalSearchParams, LocalSearchResult } from '../types/yahoo.js';
+import { McpTool } from './tool.interface.js';
+import { McpToolDefinition, McpToolWithDefinition } from './tool-definition.interface.js';
 
 // PaginationStoreを一時的にインライン定義（後で適切に移植する）
 class PaginationStore {
@@ -24,7 +26,8 @@ export interface LocalSearchToolOutput extends LocalSearchResult {}
  * ページング機能付きのローカル検索を提供します
  */
 @Injectable()
-export class LocalSearchService {
+export class LocalSearchService implements McpToolWithDefinition {
+  readonly name = 'localSearch';
   private readonly logger = new Logger(LocalSearchService.name);
   private readonly paginationStore = new PaginationStore();
 
@@ -55,5 +58,24 @@ export class LocalSearchService {
       this.logger.error(`Local Search Tool Error: ${error}`, error);
       throw error;
     }
+  }
+
+  getDefinition(): McpToolDefinition {
+    return {
+      name: this.name,
+      description: 'Yahoo!ローカルサーチAPI - キーワードまたは座標でローカル検索（10件ページング対応）',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: 'キーワード検索文字列' },
+          lat: { type: 'number', description: '緯度（座標検索の場合）' },
+          lng: { type: 'number', description: '経度（座標検索の場合）' },
+          sessionId: { type: 'string', description: 'ページング継続用セッションID' },
+          offset: { type: 'number', description: '明示的オフセット指定' },
+          reset: { type: 'boolean', description: 'ページングリセット' },
+          results: { type: 'number', description: 'カスタムページサイズ（デフォルト10）' }
+        }
+      }
+    };
   }
 }

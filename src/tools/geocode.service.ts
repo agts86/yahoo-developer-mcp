@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { YahooService } from '../yahoo/yahoo.service.js';
 import { GeocodeParams, GeocodeResult } from '../types/yahoo.js';
+import { McpTool } from './tool.interface.js';
+import { McpToolDefinition, McpToolWithDefinition } from './tool-definition.interface.js';
 
 export interface GeocodeToolInput extends GeocodeParams {}
 export interface GeocodeToolOutput extends GeocodeResult {}
@@ -10,7 +12,8 @@ export interface GeocodeToolOutput extends GeocodeResult {}
  * 住所文字列から座標を取得します
  */
 @Injectable()
-export class GeocodeService {
+export class GeocodeService implements McpToolWithDefinition {
+  readonly name = 'geocode';
   private readonly logger = new Logger(GeocodeService.name);
 
   constructor(private readonly yahooService: YahooService) {}
@@ -34,5 +37,19 @@ export class GeocodeService {
       this.logger.error(`Geocode Tool Error: ${error}`, error);
       throw error;
     }
+  }
+
+  getDefinition(): McpToolDefinition {
+    return {
+      name: this.name,
+      description: 'Yahoo!ジオコーダAPI - 住所文字列から座標を取得',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: '住所文字列' }
+        },
+        required: ['query']
+      }
+    };
   }
 }

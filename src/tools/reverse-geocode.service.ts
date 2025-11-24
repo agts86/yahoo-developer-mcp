@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { YahooService } from '../yahoo/yahoo.service.js';
 import { ReverseGeocodeParams, ReverseGeocodeResult } from '../types/yahoo.js';
+import { McpTool } from './tool.interface.js';
+import { McpToolDefinition, McpToolWithDefinition } from './tool-definition.interface.js';
 
 export interface ReverseGeocodeToolInput extends ReverseGeocodeParams {}
 export interface ReverseGeocodeToolOutput extends ReverseGeocodeResult {}
@@ -10,7 +12,8 @@ export interface ReverseGeocodeToolOutput extends ReverseGeocodeResult {}
  * 座標から住所を取得します
  */
 @Injectable()
-export class ReverseGeocodeService {
+export class ReverseGeocodeService implements McpToolWithDefinition {
+  readonly name = 'reverseGeocode';
   private readonly logger = new Logger(ReverseGeocodeService.name);
 
   constructor(private readonly yahooService: YahooService) {}
@@ -34,5 +37,20 @@ export class ReverseGeocodeService {
       this.logger.error(`Reverse Geocode Tool Error: ${error}`, error);
       throw error;
     }
+  }
+
+  getDefinition(): McpToolDefinition {
+    return {
+      name: this.name,
+      description: 'Yahoo!リバースジオコーダAPI - 座標から住所を取得',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          lat: { type: 'number', description: '緯度' },
+          lng: { type: 'number', description: '経度' }
+        },
+        required: ['lat', 'lng']
+      }
+    };
   }
 }
