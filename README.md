@@ -44,17 +44,15 @@ pnpm dev
    ```json
    {
      "mcpServers": {
-       "yahoo-developer": {
-         "transport": {
-           "type": "http",
-           "baseUrl": "http://localhost:3000/mcp"
-         },
-         "auth": {
-           "type": "bearer",
-           "token": "your_yahoo_app_id"
-         }
-       }
-     }
+        "yahoo-developer": {
+          "type": "http",
+          "url": "http://localhost:3000/mcp",
+          "tools": ["*"],
+          "headers": {
+            "Authorization": "Bearer {取得済みトークン｝"
+          }
+        }
+    }
    }
    ```
 
