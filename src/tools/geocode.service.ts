@@ -16,6 +16,10 @@ export class GeocodeService implements McpToolWithDefinition {
   readonly name = 'geocode';
   private readonly logger = new Logger(GeocodeService.name);
 
+  /**
+   * GeocodeServiceのインスタンスを作成します
+   * @param yahooService - Yahoo APIサービス
+   */
   constructor(private readonly yahooService: YahooService) {}
 
   /**
@@ -39,6 +43,10 @@ export class GeocodeService implements McpToolWithDefinition {
     }
   }
 
+  /**
+   * ツールの定義を取得します
+   * @returns MCPツール定義
+   */
   getDefinition(): McpToolDefinition {
     return {
       name: this.name,

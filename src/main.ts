@@ -3,6 +3,10 @@ import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { AppModule } from './app.module.js';
 
+/**
+ * アプリケーションのブートストラップ関数
+ * NestJS Fastifyサーバーを起動し、CORS設定を適用します
+ */
 async function bootstrap() {
   // HTTPモード: NestJS Fastifyサーバーを起動
   const app = await NestFactory.create<NestFastifyApplication>(

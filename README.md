@@ -52,7 +52,7 @@ pnpm dev
             "Authorization": "Bearer {取得済みトークン｝"
           }
         }
-    }
+      }
    }
    ```
 

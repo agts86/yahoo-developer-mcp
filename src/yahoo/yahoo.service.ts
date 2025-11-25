@@ -19,6 +19,11 @@ export class YahooService {
   private readonly logger = new Logger(YahooService.name);
   private readonly baseUrl = 'https://map.yahooapis.jp';
 
+  /**
+   * YahooServiceのインスタンスを作成します
+   * @param httpClient - HTTPクライアント
+   * @param configService - アプリケーション設定サービス
+   */
   constructor(
     private readonly httpClient: FetchHttpClient,
     private readonly configService: AppConfigService,

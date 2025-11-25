@@ -22,6 +22,11 @@ import { SSEInterceptor } from './sse.interceptor.js';
 export class McpController {
   private readonly logger = new Logger(McpController.name);
 
+  /**
+   * McpControllerのインスタンスを作成します
+   * @param mcpService - MCPサービス
+   * @param configService - アプリケーション設定サービス
+   */
   constructor(
     private readonly mcpService: McpService,
     private readonly configService: AppConfigService,
@@ -43,6 +48,9 @@ export class McpController {
 
   /**
    * MCPプロトコルのPOSTリクエストを処理（initialize, tools/list, tools/call等）
+   * @param body - リクエストボディ
+   * @param authHeader - Authorizationヘッダー（オプション）
+   * @returns MCPレスポンス
    */
   @Post()
   async handleMcpPost(
@@ -62,6 +70,7 @@ export class McpController {
 
   /**
    * 利用可能なツール一覧を取得
+   * @returns ツール一覧レスポンス
    */
   @Get('tools')
   @UseGuards(YahooApiKeyGuard)  

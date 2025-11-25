@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 export interface AppConfig {
   port: number;
   allowedOrigins?: string[];
+  extractYahooApiKey(authHeader?: string): string;
 }
 
 /**
@@ -16,12 +17,24 @@ export interface AppConfig {
  */
 @Injectable()
 export class AppConfigService {
+  /**
+   * AppConfigServiceのインスタンスを作成します
+   * @param configService - NestJSの設定サービス
+   */
   constructor(private configService: ConfigService) {}
 
+  /**
+   * アプリケーションがリッスンするポート番号を取得します
+   * @returns ポート番号（デフォルト: 3000）
+   */
   get port(): number {
     return this.configService.get<number>('PORT', 3000);
   }
 
+  /**
+   * CORSで許可されるオリジンの一覧を取得します
+   * @returns 許可されたオリジンの配列
+   */
   get allowedOrigins(): string[] {
     const origins = this.configService.get<string>('ALLOWED_ORIGINS');
     return origins ? origins.split(',') : ['http://localhost:3000'];

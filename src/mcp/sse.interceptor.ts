@@ -10,8 +10,18 @@ import { McpService } from './mcp.service.js';
  */
 @Injectable()
 export class SSEInterceptor implements NestInterceptor {
+  /**
+   * SSEInterceptorのインスタンスを作成します
+   * @param mcpService - MCPサービス
+   */
   constructor(private readonly mcpService: McpService) {}
 
+  /**
+   * リクエストをインターセプトし、SSE処理が必要かどうかを判定します
+   * @param context - 実行コンテキスト
+   * @param next - 次のハンドラー
+   * @returns Observable、Promise、またはSSE処理結果
+   */
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> | Promise<any> {
     const request = context.switchToHttp().getRequest<FastifyRequest>();
     const reply = context.switchToHttp().getResponse<FastifyReply>();

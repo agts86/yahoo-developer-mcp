@@ -4,15 +4,28 @@ import { LocalSearchParams, LocalSearchResult } from '../types/yahoo.js';
 import { McpTool } from './tool.interface.js';
 import { McpToolDefinition, McpToolWithDefinition } from './tool-definition.interface.js';
 
-// PaginationStoreを一時的にインライン定義（後で適切に移植する）
+/**
+ * ページング管理クラス（一時的なインライン実装）
+ * 後で適切な実装に置き換える予定
+ */
 class PaginationStore {
   private store = new Map<string, { offset: number; searchHash: string }>();
 
+  /**
+   * リクエストパラメータを構築します
+   * @param input - 入力パラメータ
+   * @returns 構築されたリクエストパラメータ
+   */
   buildRequestParams(input: any): any {
     // 簡易実装：後で適切な実装に置き換える
     return input;
   }
 
+  /**
+   * ページング状態を更新します
+   * @param input - 入力パラメータ
+   * @param result - 実行結果
+   */
   updatePaginationState(input: any, result: any): void {
     // 簡易実装：後で適切な実装に置き換える
   }
@@ -31,6 +44,10 @@ export class LocalSearchService implements McpToolWithDefinition {
   private readonly logger = new Logger(LocalSearchService.name);
   private readonly paginationStore = new PaginationStore();
 
+  /**
+   * LocalSearchServiceのインスタンスを作成します
+   * @param yahooService - Yahoo APIサービス
+   */
   constructor(private readonly yahooService: YahooService) {}
 
   /**
@@ -60,6 +77,10 @@ export class LocalSearchService implements McpToolWithDefinition {
     }
   }
 
+  /**
+   * ツールの定義を取得します
+   * @returns MCPツール定義
+   */
   getDefinition(): McpToolDefinition {
     return {
       name: this.name,

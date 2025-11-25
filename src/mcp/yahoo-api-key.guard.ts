@@ -9,8 +9,18 @@ import { AppConfigService } from '../config/config.js';
 export class YahooApiKeyGuard implements CanActivate {
   private readonly logger = new Logger(YahooApiKeyGuard.name);
 
+  /**
+   * YahooApiKeyGuardのインスタンスを作成します
+   * @param configService - アプリケーション設定サービス
+   */
   constructor(private readonly configService: AppConfigService) {}
 
+  /**
+   * リクエストがアクセス可能かどうかを判定します
+   * @param context - 実行コンテキスト
+   * @returns アクセス許可の可否
+   * @throws UnauthorizedException - 認証が失敗した場合
+   */
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers['authorization'];
