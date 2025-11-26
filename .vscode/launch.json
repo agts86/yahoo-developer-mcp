@@ -9,7 +9,8 @@
       "runtimeArgs": ["--env-file=.env"],
       "env": {
         "MCP_MODE": "http",
-        "PORT": "3000"
+        "PORT": "3000",
+        "NODE_ENV": "development"
       },
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
@@ -17,6 +18,11 @@
       "outFiles": [
         "${workspaceFolder}/dist/**/*.js"
       ],
+      "serverReadyAction": {
+        "pattern": "Yahoo Developer MCP Server running on http://localhost:(\\d+)",
+        "uriFormat": "http://localhost:%s/swagger",
+        "action": "openExternally"
+      },
       "sourceMaps": true,
       "skipFiles": [
         "<node_internals>/**"
