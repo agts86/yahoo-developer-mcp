@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { FetchHttpClient } from '../http/fetchClient.js';
-import { AppConfigService } from '../config/config.js';
 import {
   LocalSearchParams,
   LocalSearchResult,
@@ -25,8 +24,7 @@ export class YahooService {
    * @param configService - アプリケーション設定サービス
    */
   constructor(
-    private readonly httpClient: FetchHttpClient,
-    private readonly configService: AppConfigService,
+    private readonly httpClient: FetchHttpClient
   ) {}
 
   /**
