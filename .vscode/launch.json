@@ -14,7 +14,7 @@
       },
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "preLaunchTask": "npm: build",
+      "preLaunchTask": "pnpm: build",
       "outFiles": [
         "${workspaceFolder}/dist/**/*.js"
       ],
@@ -23,26 +23,6 @@
         "uriFormat": "http://localhost:%s/swagger",
         "action": "openExternally"
       },
-      "sourceMaps": true,
-      "skipFiles": [
-        "<node_internals>/**"
-      ]
-    },
-    {
-      "name": "Launch MCP Server (Stdio Mode)",
-      "type": "node",
-      "request": "launch",
-      "program": "${workspaceFolder}/dist/main.js",
-      "runtimeArgs": ["--env-file=.env"],
-      "env": {
-        "MCP_MODE": "stdio"
-      },
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "preLaunchTask": "npm: build",
-      "outFiles": [
-        "${workspaceFolder}/dist/**/*.js"
-      ],
       "sourceMaps": true,
       "skipFiles": [
         "<node_internals>/**"
