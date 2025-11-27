@@ -1,9 +1,8 @@
-import { LocalSearchService } from '../../src/tools/local-search.service.js';
-import { YahooService } from '../../src/yahoo/yahoo.service.js';
-import { FetchHttpClient } from '../../src/http/fetchClient.js';
+import { LocalSearchService } from '../../src/application/tools/local-search.service.js';
+import { McpRepository } from '../../src/domain/mcp/mcp.repository.js';
 
-// YahooServiceのモック
-const mockYahooService = {
+// MCPリポジトリのモック
+const mockMcpRepository: Pick<McpRepository, 'localSearch'> = {
   localSearch: jest.fn()
 };
 
@@ -11,7 +10,7 @@ describe('LocalSearchService', () => {
   let service: LocalSearchService;
 
   beforeEach(() => {
-    service = new LocalSearchService(mockYahooService as any);
+    service = new LocalSearchService(mockMcpRepository as any);
     jest.clearAllMocks();
   });
 
@@ -20,14 +19,14 @@ describe('LocalSearchService', () => {
       items: [{ name: 'Test Location', lat: 35.0, lng: 139.0 }],
       raw: {}
     };
-    mockYahooService.localSearch.mockResolvedValue(mockResult);
+    (mockMcpRepository.localSearch as jest.Mock).mockResolvedValue(mockResult);
 
     const input = { query: 'ramen' };
     const yahooAppId = 'test-app-id';
     
     const result = await service.execute(input, yahooAppId);
     
-    expect(mockYahooService.localSearch).toHaveBeenCalledWith(input, yahooAppId);
+    expect(mockMcpRepository.localSearch).toHaveBeenCalledWith(input, yahooAppId);
     expect(result).toEqual(mockResult);
   });
 

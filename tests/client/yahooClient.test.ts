@@ -1,6 +1,6 @@
-import { YahooClient } from '../../src/client/yahooClient.js';
+import { YahooClient } from '../../src/infrastructure/client/yahooClient.js';
 import { createSequentialResponses } from '../mocks/mockHttpClient.js';
-import { FetchHttpClient } from '../../src/http/fetchClient.js';
+import { FetchHttpClient } from '../../src/infrastructure/http/fetchClient.js';
 
 // Basic tests using mock responses for paging
 

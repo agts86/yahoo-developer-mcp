@@ -1,8 +1,8 @@
-import { GeocodeService } from '../../src/tools/geocode.service.js';
-import { YahooService } from '../../src/yahoo/yahoo.service.js';
+import { GeocodeService } from '../../src/application/tools/geocode.service.js';
+import { McpRepository } from '../../src/domain/mcp/mcp.repository.js';
 
-// YahooServiceのモック
-const mockYahooService = {
+// MCPリポジトリのモック
+const mockMcpRepository: Pick<McpRepository, 'geocode'> = {
   geocode: jest.fn()
 };
 
@@ -10,7 +10,7 @@ describe('GeocodeService', () => {
   let service: GeocodeService;
 
   beforeEach(() => {
-    service = new GeocodeService(mockYahooService as any);
+    service = new GeocodeService(mockMcpRepository as any);
     jest.clearAllMocks();
   });
 
@@ -24,14 +24,14 @@ describe('GeocodeService', () => {
       }],
       raw: {}
     };
-    mockYahooService.geocode.mockResolvedValue(mockResult);
+    (mockMcpRepository.geocode as jest.Mock).mockResolvedValue(mockResult);
 
     const input = { query: '東京駅' };
     const yahooAppId = 'test-app-id';
     
     const result = await service.execute(input, yahooAppId);
     
-    expect(mockYahooService.geocode).toHaveBeenCalledWith(input, yahooAppId);
+    expect(mockMcpRepository.geocode).toHaveBeenCalledWith(input, yahooAppId);
     expect(result).toEqual(mockResult);
   });
 

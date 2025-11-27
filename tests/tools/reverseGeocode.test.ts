@@ -1,8 +1,8 @@
-import { ReverseGeocodeService } from '../../src/tools/reverse-geocode.service.js';
-import { YahooService } from '../../src/yahoo/yahoo.service.js';
+import { ReverseGeocodeService } from '../../src/application/tools/reverse-geocode.service.js';
+import { McpRepository } from '../../src/domain/mcp/mcp.repository.js';
 
-// YahooServiceのモック
-const mockYahooService = {
+// MCPリポジトリのモック
+const mockMcpRepository: Pick<McpRepository, 'reverseGeocode'> = {
   reverseGeocode: jest.fn()
 };
 
@@ -10,7 +10,7 @@ describe('ReverseGeocodeService', () => {
   let service: ReverseGeocodeService;
 
   beforeEach(() => {
-    service = new ReverseGeocodeService(mockYahooService as any);
+    service = new ReverseGeocodeService(mockMcpRepository as any);
     jest.clearAllMocks();
   });
 
@@ -22,14 +22,14 @@ describe('ReverseGeocodeService', () => {
       }],
       raw: {}
     };
-    mockYahooService.reverseGeocode.mockResolvedValue(mockResult);
+    (mockMcpRepository.reverseGeocode as jest.Mock).mockResolvedValue(mockResult);
 
     const input = { lat: 35.681236, lng: 139.767125 };
     const yahooAppId = 'test-app-id';
     
     const result = await service.execute(input, yahooAppId);
     
-    expect(mockYahooService.reverseGeocode).toHaveBeenCalledWith(input, yahooAppId);
+    expect(mockMcpRepository.reverseGeocode).toHaveBeenCalledWith(input, yahooAppId);
     expect(result).toEqual(mockResult);
   });
 
@@ -70,7 +70,7 @@ describe('ReverseGeocodeService', () => {
         ]
       }
     };
-    mockYahooService.reverseGeocode.mockResolvedValue(mockResult);
+    (mockMcpRepository.reverseGeocode as jest.Mock).mockResolvedValue(mockResult);
 
     const input = { lat: 35.689521, lng: 139.691706 };
     const yahooAppId = 'test-app-id';
@@ -87,7 +87,7 @@ describe('ReverseGeocodeService', () => {
       items: [],
       raw: { Feature: [] }
     };
-    mockYahooService.reverseGeocode.mockResolvedValue(mockResult);
+    (mockMcpRepository.reverseGeocode as jest.Mock).mockResolvedValue(mockResult);
 
     const input = { lat: 0, lng: 0 };
     const yahooAppId = 'test-app-id';

@@ -1,4 +1,4 @@
-import { HttpClient, HttpRequestOptions } from '../../src/http/HttpClient.js';
+import { HttpClient, HttpRequestOptions } from '../../src/infrastructure/http/HttpClient.js';
 
 /**
  * テスト用のモックHTTPクライアント
