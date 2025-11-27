@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { HttpClient, HttpRequestOptions, HttpError } from './HttpClient.js';
 
 /**
@@ -20,7 +21,7 @@ function buildUrl(base: string, query?: Record<string, string | number | boolean
 /**
  * Fetch APIを使用したHTTPクライアントの実装
  */
-export class FetchHttpClient implements HttpClient {
+export class AxiosHttpClient implements HttpClient {
   /**
    * GETリクエストを送信します
    * @param url - リクエストURL
@@ -41,30 +42,26 @@ export class FetchHttpClient implements HttpClient {
    */
   async request<T = unknown>(url: string, options: HttpRequestOptions = {}): Promise<T> {
     const fullUrl = buildUrl(url, options.query);
-    const init: RequestInit = { ...options };
-    if (options.bodyJson !== undefined) {
-      init.body = JSON.stringify(options.bodyJson);
-      init.headers = { ...(init.headers || {}), 'Content-Type': 'application/json' };
-    }
-    let res: Response;
     try {
-      res = await fetch(fullUrl, init);
+      const res = await axios.request({
+        url: fullUrl,
+        method: options.method ?? 'GET',
+        data: options.bodyJson,
+        headers: options.bodyJson
+          ? { 'Content-Type': 'application/json', ...(options.headers as any || {}) }
+          : (options.headers as any),
+        validateStatus: () => true,
+      });
+      if (res.status < 200 || res.status >= 300) {
+        throw new HttpError(res.status, `HTTP ${res.status} for ${fullUrl}`, res.data);
+      }
+      return res.data as T;
     } catch (err: any) {
-      // ネットワーク/TLSエラーをラップして詳細を残す
+      if (err instanceof HttpError) throw err;
+      const status = err?.response?.status ?? 0;
+      const details = err?.response?.data;
       const reason = err?.message ?? String(err);
-      const cause = err?.cause ? ` | cause: ${String(err.cause)}` : '';
-      throw new HttpError(0, `Fetch failed for ${fullUrl}: ${reason}${cause}`);
+      throw new HttpError(status, `HTTP error for ${fullUrl}: ${reason}`, details);
     }
-    const text = await res.text();
-    let data: any = text;
-    try {
-      data = text ? JSON.parse(text) : undefined;
-    } catch (_) {
-      // keep raw text
-    }
-    if (!res.ok) {
-      throw new HttpError(res.status, `HTTP ${res.status} for ${fullUrl}`, data);
-    }
-    return data as T;
   }
 }

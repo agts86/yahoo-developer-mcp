@@ -1,6 +1,6 @@
 import { YahooClient } from '../../src/infrastructure/client/yahooClient.js';
 import { createSequentialResponses } from '../mocks/mockHttpClient.js';
-import { FetchHttpClient } from '../../src/infrastructure/http/fetchClient.js';
+import { AxiosHttpClient } from '../../src/infrastructure/http/fetchClient.js';
 
 // Basic tests using mock responses for paging
 
@@ -13,14 +13,14 @@ describe('YahooClient localSearch paging', () => {
     const mockHttp = createSequentialResponses(mockResponses);
     const client = new YahooClient(mockHttp);
 
-    const first = await client.localSearch({ query: 'coffee', sessionId: 's1' });
+    const first = await client.localSearch({ query: 'coffee'},  's1' );
     expect(first.items[0].name).toBe('A');
-    const second = await client.localSearch({ query: 'coffee', sessionId: 's1' });
+    const second = await client.localSearch({ query: 'coffee'},  's1' );
     expect(second.items[0].name).toBe('B');
   });
 
   test('requires query or coordinates', async () => {
-    const client = new YahooClient(new FetchHttpClient());
-    await expect(client.localSearch({})).rejects.toThrow();
+    const client = new YahooClient(new AxiosHttpClient());
+    await expect(client.localSearch({}, '')).rejects.toThrow();
   });
 });

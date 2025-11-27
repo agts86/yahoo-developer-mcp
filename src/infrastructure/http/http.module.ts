@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { FetchHttpClient } from './fetchClient.js';
+import { AxiosHttpClient } from './fetchClient.js';
 
 @Module({
-  providers: [FetchHttpClient],
-  exports: [FetchHttpClient],
+  providers: [AxiosHttpClient],
+  exports: [AxiosHttpClient],
 })
 /**
  * HTTPモジュール

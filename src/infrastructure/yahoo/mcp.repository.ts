@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { FetchHttpClient } from '../http/fetchClient.js';
+import { AxiosHttpClient } from '../http/fetchClient.js';
 import {
   LocalSearchParams,
   LocalSearchResult,
@@ -25,7 +25,7 @@ export class YahooMcpRepository implements McpRepository {
    * @param configService - アプリケーション設定サービス
    */
   constructor(
-    private readonly httpClient: FetchHttpClient
+    private readonly httpClient: AxiosHttpClient
   ) {}
 
   /**
