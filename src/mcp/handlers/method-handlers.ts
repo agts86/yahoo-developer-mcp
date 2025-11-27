@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { McpMethodHandler } from '../../../domain/mcp/method-handler.interface.js';
-import { McpToolWithDefinition } from '../../../domain/tools/tool-definition.interface.js';
-import { AppConfigService } from '../../../infrastructure/config/app-config.service.js';
+import { McpMethodHandler } from '../method-handler.interface.js';
+import { McpToolWithDefinition } from '../../tools/tool-definition.interface.js';
+import { AppConfigService } from '../../config/config.js';
 
 /**
  * MCP初期化ハンドラー

@@ -9,10 +9,10 @@ import {
   Get,
   Logger
 } from '@nestjs/common';
-import { YahooApiKeyGuard } from '../guards/yahoo-api-key.guard.js';
-import { AppConfigService } from '../../infrastructure/config/app-config.service.js';
-import { McpService } from '../../application/mcp/mcp.service.js';
-import { SSEInterceptor } from '../interceptors/sse.interceptor.js';
+import { YahooApiKeyGuard } from './yahoo-api-key.guard.js';
+import { AppConfigService } from '../config/config.js';
+import { McpService } from './mcp.service.js';
+import { SSEInterceptor } from './sse.interceptor.js';
 
 /**
  * MCP ToolのHTTP APIコントローラー

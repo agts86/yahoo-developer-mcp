@@ -2,9 +2,10 @@ import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { LocalSearchService } from '../tools/local-search.service.js';
 import { GeocodeService } from '../tools/geocode.service.js';
 import { ReverseGeocodeService } from '../tools/reverse-geocode.service.js';
-import { AppConfigService } from '../../infrastructure/config/app-config.service.js';
-import { McpToolWithDefinition } from '../../domain/tools/tool-definition.interface.js';
-import { McpMethodHandler } from '../../domain/mcp/method-handler.interface.js';
+import { AppConfigService } from '../config/config.js';
+import { McpTool } from '../tools/tool.interface.js';
+import { McpToolWithDefinition } from '../tools/tool-definition.interface.js';
+import { McpMethodHandler } from './method-handler.interface.js';
 import { 
   InitializeHandler, 
   NotificationsInitializedHandler, 

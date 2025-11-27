@@ -1,8 +1,8 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { MCP_REPOSITORY } from '../../domain/mcp/mcp.repository.js';
-import type { McpRepository } from '../../domain/mcp/mcp.repository.js';
-import { LocalSearchParams, LocalSearchResult } from '../../domain/yahoo/yahoo.types.js';
-import { McpToolDefinition, McpToolWithDefinition } from '../../domain/tools/tool-definition.interface.js';
+import { Injectable, Logger } from '@nestjs/common';
+import { YahooService } from '../yahoo/yahoo.service.js';
+import { LocalSearchParams, LocalSearchResult } from '../types/yahoo.js';
+import { McpTool } from './tool.interface.js';
+import { McpToolDefinition, McpToolWithDefinition } from './tool-definition.interface.js';
 
 /**
  * ページング管理クラス（一時的なインライン実装）
@@ -48,10 +48,7 @@ export class LocalSearchService implements McpToolWithDefinition {
    * LocalSearchServiceのインスタンスを作成します
    * @param yahooService - Yahoo APIサービス
    */
-  constructor(
-    @Inject(MCP_REPOSITORY)
-    private readonly yahooRepository: McpRepository
-  ) {}
+  constructor(private readonly yahooService: YahooService) {}
 
   /**
    * Yahoo!ローカルサーチAPIツールの実行関数
@@ -66,7 +63,7 @@ export class LocalSearchService implements McpToolWithDefinition {
     const requestParams = this.paginationStore.buildRequestParams(input);
     
     try {
-      const result = await this.yahooRepository.localSearch(requestParams, yahooAppId);
+      const result = await this.yahooService.localSearch(requestParams, yahooAppId);
       
       // ページング状態を更新
       this.paginationStore.updatePaginationState(input, result);

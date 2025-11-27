@@ -9,8 +9,8 @@ import {
   ReverseGeocodeParams,
   ReverseGeocodeResult,
   ReverseGeocodeResponseRaw
-} from '../../domain/yahoo/yahoo.types.js';
-import { getAndAdvance } from '../../domain/shared/paginationStore.js';
+} from '../types/yahoo.js';
+import { getAndAdvance } from '../server/paginationStore.js';
 
 const BASE_LOCAL_SEARCH = 'https://map.yahooapis.jp/search/local/V1/localSearch';
 const BASE_GEOCODE = 'https://map.yahooapis.jp/geocode/V1/geoCoder';

@@ -1,5 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Logger } from '@nestjs/common';
-import { AppConfigService } from '../../infrastructure/config/app-config.service.js';
+import { AppConfigService } from '../config/config.js';
 
 /**
  * Yahoo API Key認証ガード

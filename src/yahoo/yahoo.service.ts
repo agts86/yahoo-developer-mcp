@@ -7,20 +7,19 @@ import {
   GeocodeResult,
   ReverseGeocodeParams,
   ReverseGeocodeResult,
-} from '../../domain/yahoo/yahoo.types.js';
-import { McpRepository } from '../../domain/mcp/mcp.repository.js';
+} from '../types/yahoo.js';
 
 /**
- * Yahoo APIリポジトリ実装 - 外部API呼び出しと整形を担当
+ * Yahoo APIサービス - 既存のYahooClientのNestJS版
  * ローカルサーチ、ジオコーダ、リバースジオコーダーAPIの統一アクセスを提供
  */
 @Injectable()
-export class YahooMcpRepository implements McpRepository {
-  private readonly logger = new Logger(YahooMcpRepository.name);
+export class YahooService {
+  private readonly logger = new Logger(YahooService.name);
   private readonly baseUrl = 'https://map.yahooapis.jp';
 
   /**
-   * YahooRepositoryのインスタンスを作成します
+   * YahooServiceのインスタンスを作成します
    * @param httpClient - HTTPクライアント
    * @param configService - アプリケーション設定サービス
    */

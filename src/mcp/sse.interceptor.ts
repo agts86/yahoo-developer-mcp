@@ -1,7 +1,7 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { McpService } from '../../application/mcp/mcp.service.js';
+import { McpService } from './mcp.service.js';
 
 /**
  * SSE (Server-Sent Events) インターセプター

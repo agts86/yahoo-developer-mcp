@@ -46,15 +46,7 @@ export class FetchHttpClient implements HttpClient {
       init.body = JSON.stringify(options.bodyJson);
       init.headers = { ...(init.headers || {}), 'Content-Type': 'application/json' };
     }
-    let res: Response;
-    try {
-      res = await fetch(fullUrl, init);
-    } catch (err: any) {
-      // ネットワーク/TLSエラーをラップして詳細を残す
-      const reason = err?.message ?? String(err);
-      const cause = err?.cause ? ` | cause: ${String(err.cause)}` : '';
-      throw new HttpError(0, `Fetch failed for ${fullUrl}: ${reason}${cause}`);
-    }
+    const res = await fetch(fullUrl, init);
     const text = await res.text();
     let data: any = text;
     try {
