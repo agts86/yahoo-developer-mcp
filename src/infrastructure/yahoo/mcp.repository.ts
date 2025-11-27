@@ -35,7 +35,7 @@ export class YahooMcpRepository implements McpRepository {
    * @returns 検索結果
    */
   async localSearch(params: LocalSearchParams, yahooAppId: string): Promise<LocalSearchResult> {
-    const query = this.buildQuery({ ...params, appid: yahooAppId });
+    const query = this.buildQuery({ ...params, appid: yahooAppId , output: 'json' });
     const url = `${this.baseUrl}/search/local/V1/localSearch?${query}`;
     
     this.logger.debug(`Local Search Request: ${url}`);
@@ -56,7 +56,7 @@ export class YahooMcpRepository implements McpRepository {
    * @returns ジオコーディング結果
    */
   async geocode(params: GeocodeParams, yahooAppId: string): Promise<GeocodeResult> {
-    const query = this.buildQuery({ ...params, appid: yahooAppId });
+    const query = this.buildQuery({ ...params, appid: yahooAppId , output: 'json' });
     const url = `${this.baseUrl}/geocode/V1/geoCoder?${query}`;
     
     this.logger.debug(`Geocode Request: ${url}`);
@@ -77,7 +77,7 @@ export class YahooMcpRepository implements McpRepository {
    * @returns リバースジオコーディング結果
    */
   async reverseGeocode(params: ReverseGeocodeParams, yahooAppId: string): Promise<ReverseGeocodeResult> {
-    const query = this.buildQuery({ ...params, appid: yahooAppId });
+    const query = this.buildQuery({ ...params, appid: yahooAppId , output: 'json' });
     const url = `${this.baseUrl}/geoapi/V1/reverseGeoCoder?${query}`;
     
     this.logger.debug(`Reverse Geocode Request: ${url}`);
