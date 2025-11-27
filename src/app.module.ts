@@ -1,18 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { YahooModule } from './yahoo/yahoo.module.js';
-import { ToolsModule } from './tools/tools.module.js';
-import { McpModule } from './mcp/mcp.module.js';
-import { HttpModule } from './http/http.module.js';
+import { McpModule } from './presentation/mcp/mcp.module.js';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    HttpModule,
-    YahooModule,
-    ToolsModule,
     McpModule,
   ],
 })

@@ -1,8 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { YahooService } from '../yahoo/yahoo.service.js';
-import { GeocodeParams, GeocodeResult } from '../types/yahoo.js';
-import { McpTool } from './tool.interface.js';
-import { McpToolDefinition, McpToolWithDefinition } from './tool-definition.interface.js';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { MCP_REPOSITORY } from '../../domain/mcp/mcp.repository.js';
+import type { McpRepository } from '../../domain/mcp/mcp.repository.js';
+import { GeocodeParams, GeocodeResult } from '../../domain/yahoo/yahoo.types.js';
+import { McpToolDefinition, McpToolWithDefinition } from '../../domain/tools/tool-definition.interface.js';
 
 export interface GeocodeToolInput extends GeocodeParams {}
 export interface GeocodeToolOutput extends GeocodeResult {}
@@ -20,7 +20,10 @@ export class GeocodeService implements McpToolWithDefinition {
    * GeocodeServiceのインスタンスを作成します
    * @param yahooService - Yahoo APIサービス
    */
-  constructor(private readonly yahooService: YahooService) {}
+  constructor(
+    @Inject(MCP_REPOSITORY)
+    private readonly yahooRepository: McpRepository
+  ) {}
 
   /**
    * Yahoo!ジオコーダAPIツールの実行関数
@@ -32,7 +35,7 @@ export class GeocodeService implements McpToolWithDefinition {
     this.logger.debug(`Geocode Tool Input: ${JSON.stringify(input)}`);
     
     try {
-      const result = await this.yahooService.geocode(input, yahooAppId);
+      const result = await this.yahooRepository.geocode(input, yahooAppId);
       
       this.logger.debug(`Geocode Tool Output: Found ${result.items?.length || 0} items`);
       return result;

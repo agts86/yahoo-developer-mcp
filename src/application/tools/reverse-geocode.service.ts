@@ -1,8 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { YahooService } from '../yahoo/yahoo.service.js';
-import { ReverseGeocodeParams, ReverseGeocodeResult } from '../types/yahoo.js';
-import { McpTool } from './tool.interface.js';
-import { McpToolDefinition, McpToolWithDefinition } from './tool-definition.interface.js';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { MCP_REPOSITORY } from '../../domain/mcp/mcp.repository.js';
+import type { McpRepository } from '../../domain/mcp/mcp.repository.js';
+import { ReverseGeocodeParams, ReverseGeocodeResult } from '../../domain/yahoo/yahoo.types.js';
+import { McpToolDefinition, McpToolWithDefinition } from '../../domain/tools/tool-definition.interface.js';
 
 export interface ReverseGeocodeToolInput extends ReverseGeocodeParams {}
 export interface ReverseGeocodeToolOutput extends ReverseGeocodeResult {}
@@ -20,7 +20,10 @@ export class ReverseGeocodeService implements McpToolWithDefinition {
    * ReverseGeocodeServiceのインスタンスを作成します
    * @param yahooService - Yahoo APIサービス
    */
-  constructor(private readonly yahooService: YahooService) {}
+  constructor(
+    @Inject(MCP_REPOSITORY)
+    private readonly yahooRepository: McpRepository
+  ) {}
 
   /**
    * Yahoo!リバースジオコーダAPIツールの実行関数
@@ -32,7 +35,7 @@ export class ReverseGeocodeService implements McpToolWithDefinition {
     this.logger.debug(`Reverse Geocode Tool Input: ${JSON.stringify(input)}`);
     
     try {
-      const result = await this.yahooService.reverseGeocode(input, yahooAppId);
+      const result = await this.yahooRepository.reverseGeocode(input, yahooAppId);
       
       this.logger.debug(`Reverse Geocode Tool Output: Found ${result.items?.length || 0} items`);
       return result;
