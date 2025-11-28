@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { HttpClient, HttpRequestOptions, HttpError } from './HttpClient.js';
+import { IHttpClient, HttpRequestOptions, HttpError } from './IHttpClient.js';
 
 /**
  * ベースURLにクエリパラメータを付加して完全なURLを構築します
@@ -21,7 +21,10 @@ function buildUrl(base: string, query?: Record<string, string | number | boolean
 /**
  * Fetch APIを使用したHTTPクライアントの実装
  */
-export class AxiosHttpClient implements HttpClient {
+/**
+ * Axiosを用いたHTTPクライアント実装
+ */
+export class HttpClient implements IHttpClient {
   /**
    * GETリクエストを送信します
    * @param url - リクエストURL

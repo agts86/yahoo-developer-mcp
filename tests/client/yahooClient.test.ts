@@ -1,6 +1,6 @@
 import { YahooClient } from '../../src/infrastructure/client/yahooClient.js';
 import { createSequentialResponses } from '../mocks/mockHttpClient.js';
-import { AxiosHttpClient } from '../../src/infrastructure/http/fetchClient.js';
+import { HttpClient } from '../../src/infrastructure/http/httpClient.js';
 
 // Basic tests using mock responses for paging
 
@@ -20,7 +20,7 @@ describe('YahooClient localSearch paging', () => {
   });
 
   test('requires query or coordinates', async () => {
-    const client = new YahooClient(new AxiosHttpClient());
+    const client = new YahooClient(new HttpClient());
     await expect(client.localSearch({}, '')).rejects.toThrow();
   });
 });

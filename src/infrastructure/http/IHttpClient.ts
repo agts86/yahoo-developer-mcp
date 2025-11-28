@@ -3,7 +3,7 @@ export interface HttpRequestOptions extends Omit<RequestInit, 'body'> {
   bodyJson?: unknown;
 }
 
-export interface HttpClient {
+export interface IHttpClient {
   request<T = any>(url: string, options?: HttpRequestOptions): Promise<T>;
   get<T = any>(url: string, options?: Omit<HttpRequestOptions, 'method'>): Promise<T>;
 }

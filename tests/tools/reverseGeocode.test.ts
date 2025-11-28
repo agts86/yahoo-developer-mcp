@@ -1,8 +1,8 @@
 import { ReverseGeocodeService } from '../../src/application/tools/reverse-geocode.service.js';
-import { McpRepository } from '../../src/domain/mcp/mcp.repository.js';
+import { IMcpRepository } from '../../src/domain/mcp/imcp.repository.js';
 
 // MCPリポジトリのモック
-const mockMcpRepository: Pick<McpRepository, 'reverseGeocode'> = {
+const mockMcpRepository: Pick<IMcpRepository, 'reverseGeocode'> = {
   reverseGeocode: jest.fn()
 };
 

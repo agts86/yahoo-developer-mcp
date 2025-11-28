@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { MCP_REPOSITORY } from '../../domain/mcp/mcp.repository.js';
-import type { McpRepository } from '../../domain/mcp/mcp.repository.js';
+import { MCP_REPOSITORY } from '../../domain/mcp/imcp.repository.js';
+import type { IMcpRepository } from '../../domain/mcp/imcp.repository.js';
 import { GeocodeParams, GeocodeResult } from '../../domain/yahoo/yahoo.types.js';
 import { McpToolDefinition, McpToolWithDefinition } from '../../domain/tools/tool-definition.interface.js';
 
@@ -22,7 +22,7 @@ export class GeocodeService implements McpToolWithDefinition {
    */
   constructor(
     @Inject(MCP_REPOSITORY)
-    private readonly yahooRepository: McpRepository
+    private readonly yahooRepository: IMcpRepository
   ) {}
 
   /**

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AxiosHttpClient } from '../http/fetchClient.js';
+import { HttpClient } from '../http/httpClient.js';
 import {
   LocalSearchParams,
   LocalSearchResult,
@@ -8,15 +8,15 @@ import {
   ReverseGeocodeParams,
   ReverseGeocodeResult,
 } from '../../domain/yahoo/yahoo.types.js';
-import { McpRepository } from '../../domain/mcp/mcp.repository.js';
+import { IMcpRepository } from '../../domain/mcp/imcp.repository.js';
 
 /**
- * Yahoo APIリポジトリ実装 - 外部API呼び出しと整形を担当
+ * MCPリポジトリ実装（Yahoo API版） - 外部API呼び出しと整形を担当
  * ローカルサーチ、ジオコーダ、リバースジオコーダーAPIの統一アクセスを提供
  */
 @Injectable()
-export class YahooMcpRepository implements McpRepository {
-  private readonly logger = new Logger(YahooMcpRepository.name);
+export class McpRepository implements IMcpRepository {
+  private readonly logger = new Logger(McpRepository.name);
   private readonly baseUrl = 'https://map.yahooapis.jp';
 
   /**
@@ -25,7 +25,7 @@ export class YahooMcpRepository implements McpRepository {
    * @param configService - アプリケーション設定サービス
    */
   constructor(
-    private readonly httpClient: AxiosHttpClient
+    private readonly httpClient: HttpClient
   ) {}
 
   /**

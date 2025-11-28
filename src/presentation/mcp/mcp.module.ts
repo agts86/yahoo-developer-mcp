@@ -7,8 +7,8 @@ import { SSEInterceptor } from '../interceptors/sse.interceptor.js';
 import { LocalSearchService } from '../../application/tools/local-search.service.js';
 import { GeocodeService } from '../../application/tools/geocode.service.js';
 import { ReverseGeocodeService } from '../../application/tools/reverse-geocode.service.js';
-import { MCP_REPOSITORY } from '../../domain/mcp/mcp.repository.js';
-import { YahooMcpRepository } from '../../infrastructure/yahoo/mcp.repository.js';
+import { MCP_REPOSITORY } from '../../domain/mcp/imcp.repository.js';
+import { McpRepository } from '../../infrastructure/yahoo/mcp-repository.js';
 import { HttpModule } from '../../infrastructure/http/http.module.js';
 
 @Module({
@@ -24,7 +24,7 @@ import { HttpModule } from '../../infrastructure/http/http.module.js';
     ReverseGeocodeService,
     {
       provide: MCP_REPOSITORY,
-      useClass: YahooMcpRepository,
+      useClass: McpRepository,
     },
   ],
   exports: [McpService],

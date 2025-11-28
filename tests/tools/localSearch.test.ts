@@ -1,8 +1,8 @@
 import { LocalSearchService } from '../../src/application/tools/local-search.service.js';
-import { McpRepository } from '../../src/domain/mcp/mcp.repository.js';
+import { IMcpRepository } from '../../src/domain/mcp/imcp.repository.js';
 
 // MCPリポジトリのモック
-const mockMcpRepository: Pick<McpRepository, 'localSearch'> = {
+const mockMcpRepository: Pick<IMcpRepository, 'localSearch'> = {
   localSearch: jest.fn()
 };
 

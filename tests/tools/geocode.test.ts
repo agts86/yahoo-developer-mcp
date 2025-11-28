@@ -1,8 +1,8 @@
 import { GeocodeService } from '../../src/application/tools/geocode.service.js';
-import { McpRepository } from '../../src/domain/mcp/mcp.repository.js';
+import { IMcpRepository } from '../../src/domain/mcp/imcp.repository.js';
 
 // MCPリポジトリのモック
-const mockMcpRepository: Pick<McpRepository, 'geocode'> = {
+const mockMcpRepository: Pick<IMcpRepository, 'geocode'> = {
   geocode: jest.fn()
 };
 

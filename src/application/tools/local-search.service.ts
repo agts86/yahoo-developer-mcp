@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { MCP_REPOSITORY } from '../../domain/mcp/mcp.repository.js';
-import type { McpRepository } from '../../domain/mcp/mcp.repository.js';
+import { MCP_REPOSITORY } from '../../domain/mcp/imcp.repository.js';
+import type { IMcpRepository } from '../../domain/mcp/imcp.repository.js';
 import { LocalSearchParams, LocalSearchResult } from '../../domain/yahoo/yahoo.types.js';
 import { McpToolDefinition, McpToolWithDefinition } from '../../domain/tools/tool-definition.interface.js';
 
@@ -50,7 +50,7 @@ export class LocalSearchService implements McpToolWithDefinition {
    */
   constructor(
     @Inject(MCP_REPOSITORY)
-    private readonly yahooRepository: McpRepository
+    private readonly yahooRepository: IMcpRepository
   ) {}
 
   /**

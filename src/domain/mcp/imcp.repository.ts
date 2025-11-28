@@ -4,7 +4,7 @@ import { LocalSearchParams, LocalSearchResult, GeocodeParams, GeocodeResult, Rev
  * MCPユースケースで利用する外部データ取得のリポジトリ抽象
  * Yahoo APIなどの実装詳細は隠蔽し、MCP側はこのインターフェース経由で取得する
  */
-export interface McpRepository {
+export interface IMcpRepository {
   localSearch(params: LocalSearchParams, yahooAppId: string): Promise<LocalSearchResult>;
   geocode(params: GeocodeParams, yahooAppId: string): Promise<GeocodeResult>;
   reverseGeocode(params: ReverseGeocodeParams, yahooAppId: string): Promise<ReverseGeocodeResult>;

@@ -1,10 +1,10 @@
-import { HttpClient, HttpRequestOptions } from '../../src/infrastructure/http/HttpClient.js';
+import { IHttpClient, HttpRequestOptions } from '../../src/infrastructure/http/IHttpClient.js';
 
 /**
  * テスト用のモックHTTPクライアント
  * カスタムハンドラーを使用してレスポンスをシミュレートします
  */
-export class MockHttpClient implements HttpClient {
+export class MockHttpClient implements IHttpClient {
   /**
    * MockHttpClientのインスタンスを作成します
    * @param handler - リクエストを処理するハンドラー関数

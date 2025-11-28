@@ -1,4 +1,4 @@
-import { HttpClient } from '../http/HttpClient.js';
+import { IHttpClient } from '../http/IHttpClient.js';
 import {
   LocalSearchParams,
   LocalSearchResult,
@@ -95,7 +95,7 @@ export class YahooClient {
    * YahooClientのインスタンスを作成します
    * @param http - HTTPクライアントのインスタンス
    */
-  constructor(private http: HttpClient) {}
+  constructor(private http: IHttpClient) {}
 
   /**
    * Yahoo!ローカルサーチAPIを使用してローカル検索を実行します
