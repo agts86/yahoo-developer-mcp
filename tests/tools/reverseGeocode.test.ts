@@ -29,7 +29,12 @@ describe('ReverseGeocodeService', () => {
     
     const result = await service.execute(input, yahooAppId);
     
-    expect(mockMcpRepository.reverseGeocode).toHaveBeenCalledWith(input, yahooAppId);
+    expect(mockMcpRepository.reverseGeocode).toHaveBeenCalledWith(expect.objectContaining({
+      appid: yahooAppId,
+      lat: input.lat,
+      lon: input.lng,
+      output: 'json'
+    }));
     expect(result).toEqual(mockResult);
   });
 

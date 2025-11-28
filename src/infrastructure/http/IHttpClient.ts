@@ -1,11 +1,10 @@
-export interface HttpRequestOptions extends Omit<RequestInit, 'body'> {
-  query?: Record<string, string | number | boolean | undefined>;
-  bodyJson?: unknown;
+export interface HttpRequestOptions<TQuery extends object = Record<string, unknown>> extends Omit<RequestInit, 'body'> {
+  query?: TQuery;
 }
 
 export interface IHttpClient {
-  request<T = any>(url: string, options?: HttpRequestOptions): Promise<T>;
   get<T = any>(url: string, options?: Omit<HttpRequestOptions, 'method'>): Promise<T>;
+  post<T = any, TBody = unknown>(url: string, body: TBody, options?: Omit<HttpRequestOptions, 'method'>): Promise<T>;
 }
 
 /**

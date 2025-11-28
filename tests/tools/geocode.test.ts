@@ -31,7 +31,11 @@ describe('GeocodeService', () => {
     
     const result = await service.execute(input, yahooAppId);
     
-    expect(mockMcpRepository.geocode).toHaveBeenCalledWith(input, yahooAppId);
+    expect(mockMcpRepository.geocode).toHaveBeenCalledWith(expect.objectContaining({
+      appid: yahooAppId,
+      query: '東京駅',
+      output: 'json'
+    }));
     expect(result).toEqual(mockResult);
   });
 

@@ -26,7 +26,12 @@ describe('LocalSearchService', () => {
     
     const result = await service.execute(input, yahooAppId);
     
-    expect(mockMcpRepository.localSearch).toHaveBeenCalledWith(input, yahooAppId);
+    expect(mockMcpRepository.localSearch).toHaveBeenCalledWith(expect.objectContaining({
+      appid: yahooAppId,
+      query: 'ramen',
+      start: 1,
+      results: 10
+    }));
     expect(result).toEqual(mockResult);
   });
 

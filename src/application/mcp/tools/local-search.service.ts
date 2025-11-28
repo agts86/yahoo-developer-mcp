@@ -3,33 +3,8 @@ import { MCP_REPOSITORY } from '../../../domain/mcp/imcp.repository.js';
 import type { IMcpRepository } from '../../../domain/mcp/imcp.repository.js';
 import { LocalSearchParams, LocalSearchResult } from '../../../domain/yahoo/yahoo.types.js';
 import { McpToolDefinition, McpToolWithDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
-
-/**
- * ページング管理クラス（一時的なインライン実装）
- * 後で適切な実装に置き換える予定
- */
-class PaginationStore {
-  private store = new Map<string, { offset: number; searchHash: string }>();
-
-  /**
-   * リクエストパラメータを構築します
-   * @param input - 入力パラメータ
-   * @returns 構築されたリクエストパラメータ
-   */
-  buildRequestParams(input: any): any {
-    // 簡易実装：後で適切な実装に置き換える
-    return input;
-  }
-
-  /**
-   * ページング状態を更新します
-   * @param input - 入力パラメータ
-   * @param result - 実行結果
-   */
-  updatePaginationState(input: any, result: any): void {
-    // 簡易実装：後で適切な実装に置き換える
-  }
-}
+import { getAndAdvance } from '../paging/pagingStateManager.js';
+import { LocalSearchQuery } from '../../../domain/mcp/queries/yahooQueries.js';
 
 export interface LocalSearchToolInput extends LocalSearchParams {}
 export interface LocalSearchToolOutput extends LocalSearchResult {}
@@ -42,7 +17,6 @@ export interface LocalSearchToolOutput extends LocalSearchResult {}
 export class LocalSearchService implements McpToolWithDefinition {
   readonly name = 'localSearch';
   private readonly logger = new Logger(LocalSearchService.name);
-  private readonly paginationStore = new PaginationStore();
 
   /**
    * LocalSearchServiceのインスタンスを作成します
@@ -62,17 +36,36 @@ export class LocalSearchService implements McpToolWithDefinition {
   async execute(input: LocalSearchToolInput, yahooAppId: string): Promise<LocalSearchToolOutput> {
     this.logger.debug(`Local Search Tool Input: ${JSON.stringify(input)}`);
 
-    // ページング管理
-    const requestParams = this.paginationStore.buildRequestParams(input);
-    
+    if (!input.query && (input.lat === undefined || input.lng === undefined)) {
+      throw new Error('localSearch requires either query or lat+lng');
+    }
+
+    const pageSize = input.results && input.results > 0 ? input.results : 10;
+    let offset = input.offset ?? 0;
+    let nextOffset: number | undefined;
+
+    if (input.sessionId) {
+      const hash = JSON.stringify({ q: input.query, lat: input.lat, lng: input.lng });
+      const r = getAndAdvance({ sessionId: input.sessionId, hash }, pageSize, !!input.reset, input.offset);
+      offset = r.offset;
+      nextOffset = r.nextOffset;
+    }
+
+    const query: LocalSearchQuery = {
+      appid: yahooAppId,
+      output: 'json',
+      query: input.query,
+      lat: input.lat,
+      lon: input.lng,
+      start: offset + 1,
+      results: pageSize
+    };
+
     try {
-      const result = await this.yahooRepository.localSearch(requestParams, yahooAppId);
-      
-      // ページング状態を更新
-      this.paginationStore.updatePaginationState(input, result);
+      const result = await this.yahooRepository.localSearch(query);
       
       this.logger.debug(`Local Search Tool Output: Found ${result.items?.length || 0} items`);
-      return result;
+      return { ...result, nextOffset };
       
     } catch (error) {
       this.logger.error(`Local Search Tool Error: ${error}`, error);

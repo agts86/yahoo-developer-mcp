@@ -3,6 +3,7 @@ import { MCP_REPOSITORY } from '../../../domain/mcp/imcp.repository.js';
 import type { IMcpRepository } from '../../../domain/mcp/imcp.repository.js';
 import { ReverseGeocodeParams, ReverseGeocodeResult } from '../../../domain/yahoo/yahoo.types.js';
 import { McpToolDefinition, McpToolWithDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
+import { ReverseGeocodeQuery } from '../../../domain/mcp/queries/yahooQueries.js';
 
 export interface ReverseGeocodeToolInput extends ReverseGeocodeParams {}
 export interface ReverseGeocodeToolOutput extends ReverseGeocodeResult {}
@@ -34,8 +35,19 @@ export class ReverseGeocodeService implements McpToolWithDefinition {
   async execute(input: ReverseGeocodeToolInput, yahooAppId: string): Promise<ReverseGeocodeToolOutput> {
     this.logger.debug(`Reverse Geocode Tool Input: ${JSON.stringify(input)}`);
     
+    if (input.lat === undefined || input.lng === undefined) {
+      throw new Error('reverseGeocode requires lat & lng');
+    }
+
+    const query: ReverseGeocodeQuery = {
+      appid: yahooAppId,
+      output: 'json',
+      lat: input.lat,
+      lon: input.lng
+    };
+
     try {
-      const result = await this.yahooRepository.reverseGeocode(input, yahooAppId);
+      const result = await this.yahooRepository.reverseGeocode(query);
       
       this.logger.debug(`Reverse Geocode Tool Output: Found ${result.items?.length || 0} items`);
       return result;

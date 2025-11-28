@@ -3,6 +3,7 @@ import { MCP_REPOSITORY } from '../../../domain/mcp/imcp.repository.js';
 import type { IMcpRepository } from '../../../domain/mcp/imcp.repository.js';
 import { GeocodeParams, GeocodeResult } from '../../../domain/yahoo/yahoo.types.js';
 import { McpToolDefinition, McpToolWithDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
+import { GeocodeQuery } from '../../../domain/mcp/queries/yahooQueries.js';
 
 export interface GeocodeToolInput extends GeocodeParams {}
 export interface GeocodeToolOutput extends GeocodeResult {}
@@ -34,8 +35,16 @@ export class GeocodeService implements McpToolWithDefinition {
   async execute(input: GeocodeToolInput, yahooAppId: string): Promise<GeocodeToolOutput> {
     this.logger.debug(`Geocode Tool Input: ${JSON.stringify(input)}`);
     
+    if (!input.query) throw new Error('geocode requires query');
+
+    const query: GeocodeQuery = {
+      appid: yahooAppId,
+      output: 'json',
+      query: input.query
+    };
+
     try {
-      const result = await this.yahooRepository.geocode(input, yahooAppId);
+      const result = await this.yahooRepository.geocode(query);
       
       this.logger.debug(`Geocode Tool Output: Found ${result.items?.length || 0} items`);
       return result;

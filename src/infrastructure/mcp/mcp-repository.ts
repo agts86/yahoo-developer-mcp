@@ -1,18 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpClient } from '../http/httpClient.js';
 import {
-  LocalSearchParams,
   LocalSearchResult,
   LocalSearchResponseRaw,
-  GeocodeParams,
   GeocodeResult,
   GeocodeResponseRaw,
-  ReverseGeocodeParams,
   ReverseGeocodeResult,
   ReverseGeocodeResponseRaw,
 } from '../../domain/yahoo/yahoo.types.js';
 import { IMcpRepository } from '../../domain/mcp/imcp.repository.js';
-import { getAndAdvance } from '../../application/mcp/paging/pagingStateManager.js';
+import { LocalSearchQuery, GeocodeQuery, ReverseGeocodeQuery } from '../../domain/mcp/queries/yahooQueries.js';
 
 const BASE_LOCAL_SEARCH = 'https://map.yahooapis.jp/search/local/V1/localSearch';
 const BASE_GEOCODE = 'https://map.yahooapis.jp/geocode/V1/geoCoder';
@@ -84,70 +81,23 @@ export class McpRepository implements IMcpRepository {
     private readonly httpClient: HttpClient
   ) {}
 
-  async localSearch(params: LocalSearchParams, yahooAppId: string): Promise<LocalSearchResult> {
-    if (!params.query && (params.lat === undefined || params.lng === undefined)) {
-      throw new Error('localSearch requires either query or lat+lng');
-    }
-    const pageSize = params.results && params.results > 0 ? params.results : 10;
-    let offset = params.offset ?? 0;
-    let nextOffset: number | undefined;
-
-    if (params.sessionId) {
-      const hash = this.hashParams(params);
-      const r = getAndAdvance({ sessionId: params.sessionId, hash }, pageSize, !!params.reset, params.offset);
-      offset = r.offset;
-      nextOffset = r.nextOffset;
-    }
-
-    const query: Record<string, string | number | boolean | undefined> = {
-      appid: yahooAppId,
-      output: 'json',
-      query: params.query,
-      lat: params.lat,
-      lon: params.lng,
-      start: offset + 1,
-      results: pageSize
-    };
-
-    this.logger.debug(`Local Search Request params: ${JSON.stringify({ ...params, offset })}`);
-
-    const raw = await this.httpClient.request<LocalSearchResponseRaw>(BASE_LOCAL_SEARCH, { query });
+  async localSearch(query: LocalSearchQuery): Promise<LocalSearchResult> {
+    this.logger.debug(`Local Search Request params: ${JSON.stringify(query)}`);
+    const raw = await this.httpClient.get<LocalSearchResponseRaw, LocalSearchQuery>(BASE_LOCAL_SEARCH, { query });
     const flat = flattenLocal(raw);
-    return { ...flat, nextOffset };
+    return { ...flat };
   }
 
-  async geocode(params: GeocodeParams, yahooAppId: string): Promise<GeocodeResult> {
-    if (!params.query) throw new Error('geocode requires query');
-    const query = {
-      appid: yahooAppId,
-      output: 'json',
-      query: params.query
-    };
-
-    this.logger.debug(`Geocode Request params: ${JSON.stringify(params)}`);
-
-    const raw = await this.httpClient.request<GeocodeResponseRaw>(BASE_GEOCODE, { query });
+  async geocode(query: GeocodeQuery): Promise<GeocodeResult> {
+    this.logger.debug(`Geocode Request params: ${JSON.stringify(query)}`);
+    const raw = await this.httpClient.get<GeocodeResponseRaw, GeocodeQuery>(BASE_GEOCODE, { query });
     return flattenGeocode(raw);
   }
 
-  async reverseGeocode(params: ReverseGeocodeParams, yahooAppId: string): Promise<ReverseGeocodeResult> {
-    if (params.lat === undefined || params.lng === undefined) {
-      throw new Error('reverseGeocode requires lat & lng');
-    }
-    const query = {
-      appid: yahooAppId,
-      output: 'json',
-      lat: params.lat,
-      lon: params.lng
-    };
-
-    this.logger.debug(`Reverse Geocode Request params: ${JSON.stringify(params)}`);
-
-    const raw = await this.httpClient.request<ReverseGeocodeResponseRaw>(BASE_REVERSE_GEOCODE, { query });
+  async reverseGeocode(query: ReverseGeocodeQuery): Promise<ReverseGeocodeResult> {
+    this.logger.debug(`Reverse Geocode Request params: ${JSON.stringify(query)}`);
+    const raw = await this.httpClient.get<ReverseGeocodeResponseRaw, ReverseGeocodeQuery>(BASE_REVERSE_GEOCODE, { query });
     return flattenReverse(raw);
   }
 
-  private hashParams(p: LocalSearchParams): string {
-    return JSON.stringify({ q: p.query, lat: p.lat, lng: p.lng });
-  }
 }

@@ -1,13 +1,14 @@
-import { LocalSearchParams, LocalSearchResult, GeocodeParams, GeocodeResult, ReverseGeocodeParams, ReverseGeocodeResult } from '../yahoo/yahoo.types.js';
+import { LocalSearchResult, GeocodeResult, ReverseGeocodeResult } from '../yahoo/yahoo.types.js';
+import { LocalSearchQuery, GeocodeQuery, ReverseGeocodeQuery } from './queries/yahooQueries.js';
 
 /**
  * MCPユースケースで利用する外部データ取得のリポジトリ抽象
  * Yahoo APIなどの実装詳細は隠蔽し、MCP側はこのインターフェース経由で取得する
  */
 export interface IMcpRepository {
-  localSearch(params: LocalSearchParams, yahooAppId: string): Promise<LocalSearchResult>;
-  geocode(params: GeocodeParams, yahooAppId: string): Promise<GeocodeResult>;
-  reverseGeocode(params: ReverseGeocodeParams, yahooAppId: string): Promise<ReverseGeocodeResult>;
+  localSearch(query: LocalSearchQuery): Promise<LocalSearchResult>;
+  geocode(query: GeocodeQuery): Promise<GeocodeResult>;
+  reverseGeocode(query: ReverseGeocodeQuery): Promise<ReverseGeocodeResult>;
 }
 
 /**
