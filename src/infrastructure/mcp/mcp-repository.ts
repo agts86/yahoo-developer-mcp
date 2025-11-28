@@ -12,7 +12,7 @@ import {
   ReverseGeocodeResponseRaw,
 } from '../../domain/yahoo/yahoo.types.js';
 import { IMcpRepository } from '../../domain/mcp/imcp.repository.js';
-import { getAndAdvance } from '../../domain/shared/paginationStore.js';
+import { getAndAdvance } from '../../application/mcp/paging/pagingStateManager.js';
 
 const BASE_LOCAL_SEARCH = 'https://map.yahooapis.jp/search/local/V1/localSearch';
 const BASE_GEOCODE = 'https://map.yahooapis.jp/geocode/V1/geoCoder';
