@@ -8,7 +8,7 @@ import { LocalSearchService } from '../../application/tools/local-search.service
 import { GeocodeService } from '../../application/tools/geocode.service.js';
 import { ReverseGeocodeService } from '../../application/tools/reverse-geocode.service.js';
 import { MCP_REPOSITORY } from '../../domain/mcp/imcp.repository.js';
-import { McpRepository } from '../../infrastructure/yahoo/mcp-repository.js';
+import { McpRepository } from '../../infrastructure/mcp/mcp-repository.js';
 import { HttpModule } from '../../infrastructure/http/http.module.js';
 
 @Module({
