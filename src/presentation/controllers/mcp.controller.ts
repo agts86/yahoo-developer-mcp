@@ -10,7 +10,7 @@ import {
   Logger
 } from '@nestjs/common';
 import { YahooApiKeyGuard } from '../guards/yahoo-api-key.guard.js';
-import { AppConfigService } from '../../infrastructure/config/app-config.service.js';
+import { AppConfigProvider } from '../../infrastructure/config/app-config.provider.js';
 import { McpService } from '../../application/mcp/mcp.service.js';
 import { SSEInterceptor } from '../interceptors/sse.interceptor.js';
 
@@ -29,7 +29,7 @@ export class McpController {
    */
   constructor(
     private readonly mcpService: McpService,
-    private readonly configService: AppConfigService,
+    private readonly configService: AppConfigProvider,
   ) {}
 
   /**

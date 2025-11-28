@@ -1,4 +1,4 @@
-import { LocalSearchService } from '../../src/application/tools/local-search.service.js';
+import { LocalSearchService } from '../../src/application/mcp/tools/local-search.service.js';
 import { IMcpRepository } from '../../src/domain/mcp/imcp.repository.js';
 
 // MCPリポジトリのモック

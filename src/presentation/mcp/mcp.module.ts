@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { McpController } from '../controllers/mcp.controller.js';
 import { McpService } from '../../application/mcp/mcp.service.js';
-import { AppConfigService } from '../../infrastructure/config/app-config.service.js';
+import { AppConfigProvider } from '../../infrastructure/config/app-config.provider.js';
 import { YahooApiKeyGuard } from '../guards/yahoo-api-key.guard.js';
 import { SSEInterceptor } from '../interceptors/sse.interceptor.js';
-import { LocalSearchService } from '../../application/tools/local-search.service.js';
-import { GeocodeService } from '../../application/tools/geocode.service.js';
-import { ReverseGeocodeService } from '../../application/tools/reverse-geocode.service.js';
+import { LocalSearchService } from '../../application/mcp/tools/local-search.service.js';
+import { GeocodeService } from '../../application/mcp/tools/geocode.service.js';
+import { ReverseGeocodeService } from '../../application/mcp/tools/reverse-geocode.service.js';
 import { MCP_REPOSITORY } from '../../domain/mcp/imcp.repository.js';
 import { McpRepository } from '../../infrastructure/mcp/mcp-repository.js';
 import { HttpModule } from '../../infrastructure/http/http.module.js';
@@ -16,7 +16,7 @@ import { HttpModule } from '../../infrastructure/http/http.module.js';
   controllers: [McpController],
   providers: [
     McpService,
-    AppConfigService,
+    AppConfigProvider,
     YahooApiKeyGuard,
     SSEInterceptor,
     LocalSearchService,

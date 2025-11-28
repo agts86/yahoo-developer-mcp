@@ -1,8 +1,8 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { MCP_REPOSITORY } from '../../domain/mcp/imcp.repository.js';
-import type { IMcpRepository } from '../../domain/mcp/imcp.repository.js';
-import { ReverseGeocodeParams, ReverseGeocodeResult } from '../../domain/yahoo/yahoo.types.js';
-import { McpToolDefinition, McpToolWithDefinition } from '../../domain/tools/tool-definition.interface.js';
+import { MCP_REPOSITORY } from '../../../domain/mcp/imcp.repository.js';
+import type { IMcpRepository } from '../../../domain/mcp/imcp.repository.js';
+import { ReverseGeocodeParams, ReverseGeocodeResult } from '../../../domain/yahoo/yahoo.types.js';
+import { McpToolDefinition, McpToolWithDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
 
 export interface ReverseGeocodeToolInput extends ReverseGeocodeParams {}
 export interface ReverseGeocodeToolOutput extends ReverseGeocodeResult {}

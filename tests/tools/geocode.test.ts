@@ -1,4 +1,4 @@
-import { GeocodeService } from '../../src/application/tools/geocode.service.js';
+import { GeocodeService } from '../../src/application/mcp/tools/geocode.service.js';
 import { IMcpRepository } from '../../src/domain/mcp/imcp.repository.js';
 
 // MCPリポジトリのモック

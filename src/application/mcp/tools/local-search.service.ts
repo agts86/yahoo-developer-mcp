@@ -1,8 +1,8 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { MCP_REPOSITORY } from '../../domain/mcp/imcp.repository.js';
-import type { IMcpRepository } from '../../domain/mcp/imcp.repository.js';
-import { LocalSearchParams, LocalSearchResult } from '../../domain/yahoo/yahoo.types.js';
-import { McpToolDefinition, McpToolWithDefinition } from '../../domain/tools/tool-definition.interface.js';
+import { MCP_REPOSITORY } from '../../../domain/mcp/imcp.repository.js';
+import type { IMcpRepository } from '../../../domain/mcp/imcp.repository.js';
+import { LocalSearchParams, LocalSearchResult } from '../../../domain/yahoo/yahoo.types.js';
+import { McpToolDefinition, McpToolWithDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
 
 /**
  * ページング管理クラス（一時的なインライン実装）

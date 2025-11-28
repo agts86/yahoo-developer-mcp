@@ -1,9 +1,9 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
-import { LocalSearchService } from '../tools/local-search.service.js';
-import { GeocodeService } from '../tools/geocode.service.js';
-import { ReverseGeocodeService } from '../tools/reverse-geocode.service.js';
-import { AppConfigService } from '../../infrastructure/config/app-config.service.js';
-import { McpToolWithDefinition } from '../../domain/tools/tool-definition.interface.js';
+import { LocalSearchService } from './tools/local-search.service.js';
+import { GeocodeService } from './tools/geocode.service.js';
+import { ReverseGeocodeService } from './tools/reverse-geocode.service.js';
+import { AppConfigProvider } from '../../infrastructure/config/app-config.provider.js';
+import { McpToolWithDefinition } from '../../domain/mcp/tools/tool-definition.interface.js';
 import { McpMethodHandler } from '../../domain/mcp/method-handler.interface.js';
 import { 
   InitializeHandler, 
@@ -34,7 +34,7 @@ export class McpService {
     private readonly localSearchService: LocalSearchService,
     private readonly geocodeService: GeocodeService,
     private readonly reverseGeocodeService: ReverseGeocodeService,
-    private readonly configService: AppConfigService,
+    private readonly configService: AppConfigProvider,
   ) {
     // ツールを配列で管理
     this.tools = [

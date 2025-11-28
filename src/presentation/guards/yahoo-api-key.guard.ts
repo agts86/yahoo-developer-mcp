@@ -1,5 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Logger } from '@nestjs/common';
-import { AppConfigService } from '../../infrastructure/config/app-config.service.js';
+import { AppConfigProvider } from '../../infrastructure/config/app-config.provider.js';
 
 /**
  * Yahoo API Key認証ガード
@@ -13,7 +13,7 @@ export class YahooApiKeyGuard implements CanActivate {
    * YahooApiKeyGuardのインスタンスを作成します
    * @param configService - アプリケーション設定サービス
    */
-  constructor(private readonly configService: AppConfigService) {}
+  constructor(private readonly configService: AppConfigProvider) {}
 
   /**
    * リクエストがアクセス可能かどうかを判定します

@@ -1,4 +1,4 @@
-import { ReverseGeocodeService } from '../../src/application/tools/reverse-geocode.service.js';
+import { ReverseGeocodeService } from '../../src/application/mcp/tools/reverse-geocode.service.js';
 import { IMcpRepository } from '../../src/domain/mcp/imcp.repository.js';
 
 // MCPリポジトリのモック
