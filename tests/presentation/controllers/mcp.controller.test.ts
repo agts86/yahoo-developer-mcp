@@ -1,6 +1,6 @@
-import { McpController } from '../../src/presentation/controllers/mcp.controller.js';
-import { McpService } from '../../src/application/mcp/mcp.service.js';
-import { AppConfigProvider } from '../../src/infrastructure/config/app-config.provider.js';
+import { McpController } from '../../../src/presentation/controllers/mcp.controller.js';
+import { McpService } from '../../../src/application/mcp/mcp.service.js';
+import { AppConfigProvider } from '../../../src/infrastructure/config/app-config.provider.js';
 
 describe('McpController', () => {
   let controller: McpController;
