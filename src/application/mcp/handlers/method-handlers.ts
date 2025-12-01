@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { McpMethodHandler } from '../../../domain/mcp/method-handler.interface.js';
 import { McpToolWithDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
 import { AppConfigProvider } from '../../../infrastructure/config/app-config.provider.js';
+import { LoggingSetLevelParams, McpMessage, ToolsCallParams } from '../../../domain/mcp/mcp-message.interface.js';
 
 /**
  * MCP初期化ハンドラー
@@ -17,7 +18,7 @@ export class InitializeHandler implements McpMethodHandler {
    * @param message - MCPメッセージ
    * @returns 初期化レスポンス
    */
-  handle(message: any) {
+  handle(message: McpMessage) {
     this.logger.log('Handling HTTP MCP initialize request');
     return {
       jsonrpc: '2.0',
@@ -52,7 +53,7 @@ export class NotificationsInitializedHandler implements McpMethodHandler {
    * 初期化完了通知を処理します
    * @returns void（通知なのでレスポンス不要）
    */
-  handle() {
+  handle(_message: McpMessage) {
     this.logger.log('HTTP MCP client initialized');
     return; // notification なのでレスポンス不要
   }
@@ -72,7 +73,7 @@ export class LoggingSetLevelHandler implements McpMethodHandler {
    * @param message - MCPメッセージ
    * @returns ログレベル設定レスポンス
    */
-  handle(message: any) {
+  handle(message: McpMessage<LoggingSetLevelParams>) {
     this.logger.log(`Setting log level to: ${message.params?.level || 'info'}`);
     return {
       jsonrpc: '2.0',
@@ -101,7 +102,7 @@ export class ToolsListHandler implements McpMethodHandler {
    * @param message - MCPメッセージ
    * @returns ツールリストレスポンス
    */
-  handle(message: any) {
+  handle(message: McpMessage) {
     return {
       jsonrpc: '2.0',
       id: message.id,
@@ -137,9 +138,9 @@ export class ToolsCallHandler implements McpMethodHandler {
    * @param authHeader - 認証ヘッダー（オプション）
    * @returns ツール実行結果レスポンス
    */
-  async handle(message: any, authHeader?: string) {
+  async handle(message: McpMessage<ToolsCallParams>, authHeader?: string) {
     const yahooAppId = this.configService.extractYahooApiKey(authHeader);
-    const { name, arguments: args } = message.params;
+    const { name, arguments: args } = message.params ?? {};
 
     try {
       const tool = this.tools.find(t => t.name === name);

@@ -9,7 +9,7 @@ export interface McpToolDefinition {
   description: string;
   inputSchema: {
     type: 'object';
-    properties: Record<string, any>;
+    properties: Record<string, unknown>;
     required?: string[];
   };
 }
@@ -18,7 +18,7 @@ export interface McpToolDefinition {
  * MCPツールの拡張インターフェース
  * ツール定義情報を含むツールインターフェース
  */
-export interface McpToolWithDefinition extends McpTool {
+export interface McpToolWithDefinition<Input = unknown, Output = unknown> extends McpTool<Input, Output> {
   /**
    * ツール定義を返します
    */

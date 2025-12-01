@@ -14,7 +14,7 @@ export interface LocalSearchToolOutput extends LocalSearchResult {}
  * ページング機能付きのローカル検索を提供します
  */
 @Injectable()
-export class LocalSearchService implements McpToolWithDefinition {
+export class LocalSearchService implements McpToolWithDefinition<LocalSearchToolInput, LocalSearchToolOutput> {
   readonly name = 'localSearch';
   private readonly logger = new Logger(LocalSearchService.name);
 

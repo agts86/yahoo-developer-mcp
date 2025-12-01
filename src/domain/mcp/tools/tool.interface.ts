@@ -2,7 +2,7 @@
  * MCPツールの共通インターフェース
  * 全てのツール実装クラスが実装する必要があります
  */
-export interface McpTool {
+export interface McpTool<Input = unknown, Output = unknown> {
   /**
    * ツール名を返します
    */
@@ -14,5 +14,5 @@ export interface McpTool {
    * @param yahooAppId Yahoo API Key
    * @returns ツールの実行結果
    */
-  execute(input: any, yahooAppId: string): Promise<any>;
+  execute(input: Input, yahooAppId: string): Promise<Output>;
 }

@@ -1,10 +1,12 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { FastifyReply, FastifyRequest } from 'fastify';
 import { LocalSearchService } from './tools/local-search.service.js';
 import { GeocodeService } from './tools/geocode.service.js';
 import { ReverseGeocodeService } from './tools/reverse-geocode.service.js';
 import { AppConfigProvider } from '../../infrastructure/config/app-config.provider.js';
-import { McpToolWithDefinition } from '../../domain/mcp/tools/tool-definition.interface.js';
+import { McpToolDefinition, McpToolWithDefinition } from '../../domain/mcp/tools/tool-definition.interface.js';
 import { McpMethodHandler } from '../../domain/mcp/method-handler.interface.js';
+import { McpMessage } from '../../domain/mcp/mcp-message.interface.js';
 import { 
   InitializeHandler, 
   NotificationsInitializedHandler, 
@@ -61,7 +63,7 @@ export class McpService {
    * @param authHeader - 認証ヘッダー（オプション）
    * @returns 処理結果
    */
-  async handleHttpMcpMessage(message: any, authHeader?: string) {
+  async handleHttpMcpMessage(message: McpMessage, authHeader?: string) {
     this.logger.debug(`Processing HTTP MCP message: ${message.method}`);
     return await this.dispatchHttpMcpMethod(message, authHeader);
   }
@@ -73,7 +75,7 @@ export class McpService {
    * @returns メソッド実行結果
    * @throws メソッドが見つからない場合にエラーをスロー
    */
-  private async dispatchHttpMcpMethod(message: any, authHeader?: string) {
+  private async dispatchHttpMcpMethod(message: McpMessage, authHeader?: string) {
     const method = message.method;
     const handler = this.methodHandlers.find(h => h.method === method);
     
@@ -94,7 +96,7 @@ export class McpService {
    * @returns ツール実行結果
    * @throws ツールが見つからない場合にエラーをスロー
    */
-  async executeToolByName(toolName: string, input: any, yahooAppId: string) {
+  async executeToolByName(toolName: string, input: Record<string, unknown>, yahooAppId: string) {
     const tool = this.tools.find(t => t.name === toolName);
     if (!tool) {
       const error = new Error(`Unknown tool: ${toolName}`);
@@ -108,7 +110,7 @@ export class McpService {
    * HTTP用ツール定義を取得（動的生成）
    * @returns ツール定義の配列
    */
-  getHttpToolsDefinition() {
+  getHttpToolsDefinition(): McpToolDefinition[] {
     return this.tools.map(tool => tool.getDefinition());
   }
 
@@ -118,12 +120,22 @@ export class McpService {
    * @param method - 未対応のメソッド名
    * @throws メソッド未対応エラーをスロー
    */
-  private createMethodNotFoundError(messageId: string, method: string) {
-    const error = new Error(`Method not found: ${method}`);
+  private createMethodNotFoundError(messageId: string | undefined, method: string) {
+    const error = new Error(`Method not found: ${method}`) as McpRpcError;
     error.name = 'MethodNotFoundError';
-    (error as any).code = -32601;
-    (error as any).id = messageId;
+    error.code = -32601;
+    error.id = messageId;
     throw error;
+  }
+
+  /**
+   * 例外をMCPエラー構造として扱えるように変換します
+   */
+  private toRpcError(error: unknown): McpRpcError | undefined {
+    if (typeof error === 'object' && error !== null && 'name' in error) {
+      return error as McpRpcError;
+    }
+    return undefined;
   }
 
   /**
@@ -131,7 +143,7 @@ export class McpService {
    * @param result - ツール実行結果
    * @returns フォーマットされたレスポンス
    */
-  formatToolResponse(result: any) {
+  formatToolResponse(result: unknown) {
     return {
       content: [
         {
@@ -147,8 +159,8 @@ export class McpService {
    * @param error - エラーオブジェクト
    * @returns フォーマットされたエラーレスポンス
    */
-  formatToolError(error: any) {
-    this.logger.error(`Tool execution error: ${error}`, error);
+  formatToolError(error: unknown) {
+    this.logger.error(`Tool execution error: ${error}`, error instanceof Error ? error.stack : undefined);
     
     return {
       content: [
@@ -167,22 +179,24 @@ export class McpService {
    * @param messageId - メッセージID（オプション）
    * @throws 適切なHTTPエクセプションをスロー
    */
-  handleHttpMcpError(error: any, messageId?: string) {
-    this.logger.error(`HTTP MCP Message handling error: ${error}`, error);
+  handleHttpMcpError(error: unknown, messageId?: string) {
+    this.logger.error(`HTTP MCP Message handling error: ${error}`, error instanceof Error ? error.stack : undefined);
     
-    if (error.name === 'MethodNotFoundError') {
+    const rpcError = this.toRpcError(error);
+
+    if (rpcError?.name === 'MethodNotFoundError') {
       throw new HttpException({
         jsonrpc: '2.0',
-        id: error.id || messageId,
+        id: rpcError.id || messageId,
         error: {
           code: -32601,
-          message: error.message
+          message: rpcError.message
         }
       }, HttpStatus.BAD_REQUEST);
     }
 
-    if (error.name === 'UnknownToolError') {
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    if (rpcError?.name === 'UnknownToolError') {
+      throw new HttpException(rpcError.message, HttpStatus.BAD_REQUEST);
     }
     
     throw new HttpException({
@@ -191,7 +205,7 @@ export class McpService {
       error: {
         code: -32603,
         message: 'Internal error',
-        data: error instanceof Error ? error.message : String(error)
+        data: rpcError?.message ?? String(error)
       }
     }, HttpStatus.INTERNAL_SERVER_ERROR);
   }
@@ -202,7 +216,7 @@ export class McpService {
    * @param request - Fastifyリクエストオブジェクト
    * @returns レスポンスオブジェクト
    */
-  handleSSEConnection(reply: any, request: any) {
+  handleSSEConnection(reply: FastifyReply, request: FastifyRequest) {
     this.logger.debug('SSE connection requested');
     
     // SSEヘッダーを設定
@@ -269,3 +283,5 @@ export class McpService {
     };
   }
 }
+
+type McpRpcError = Error & { code?: number; id?: string };

@@ -13,7 +13,7 @@ export interface ReverseGeocodeToolOutput extends ReverseGeocodeResult {}
  * 座標から住所を取得します
  */
 @Injectable()
-export class ReverseGeocodeService implements McpToolWithDefinition {
+export class ReverseGeocodeService implements McpToolWithDefinition<ReverseGeocodeToolInput, ReverseGeocodeToolOutput> {
   readonly name = 'reverseGeocode';
   private readonly logger = new Logger(ReverseGeocodeService.name);
 

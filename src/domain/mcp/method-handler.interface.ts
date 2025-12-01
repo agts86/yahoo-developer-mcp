@@ -1,7 +1,9 @@
 /**
  * MCPメソッドハンドラーのインターフェース
  */
-export interface McpMethodHandler {
+import { McpMessage } from './mcp-message.interface.js';
+
+export interface McpMethodHandler<Params = unknown, Response = unknown> {
   /**
    * ハンドラーが対応するメソッド名
    */
@@ -13,5 +15,5 @@ export interface McpMethodHandler {
    * @param authHeader 認証ヘッダー（オプション）
    * @returns レスポンス
    */
-  handle(message: any, authHeader?: string): Promise<any> | any;
+  handle(message: McpMessage<Params>, authHeader?: string): Promise<Response> | Response;
 }

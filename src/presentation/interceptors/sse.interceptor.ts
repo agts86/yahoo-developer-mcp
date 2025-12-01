@@ -29,7 +29,7 @@ export class SSEInterceptor implements NestInterceptor {
     // SSEリクエストを検出
     if (request.headers.accept?.includes('text/event-stream')) {
       // SSE処理を実行してリクエストを終了
-      return this.mcpService.handleSSEConnection(reply, request);
+      return Promise.resolve(this.mcpService.handleSSEConnection(reply, request));
     }
     
     // 通常のリクエスト処理を続行

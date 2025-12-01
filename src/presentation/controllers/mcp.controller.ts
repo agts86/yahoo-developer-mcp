@@ -13,6 +13,7 @@ import { YahooApiKeyGuard } from '../guards/yahoo-api-key.guard.js';
 import { AppConfigProvider } from '../../infrastructure/config/app-config.provider.js';
 import { McpService } from '../../application/mcp/mcp.service.js';
 import { SSEInterceptor } from '../interceptors/sse.interceptor.js';
+import type { McpMessage } from '../../domain/mcp/mcp-message.interface.js';
 
 /**
  * MCP ToolのHTTP APIコントローラー
@@ -54,7 +55,7 @@ export class McpController {
    */
   @Post()
   async handleMcpPost(
-    @Body() body: any,
+    @Body() body: McpMessage,
     @Headers('authorization') authHeader?: string
   ) {
     this.logger.debug(`MCP POST Message: ${JSON.stringify(body)}`);
@@ -90,7 +91,7 @@ export class McpController {
   @UseGuards(YahooApiKeyGuard)
   async invokeTool(
     @Param('toolName') toolName: string,
-    @Body() input: any,
+    @Body() input: Record<string, unknown>,
     @Headers('authorization') authHeader?: string
   ) {
     this.logger.debug(`Tool invocation: ${toolName} with input: ${JSON.stringify(input)}`);

@@ -13,7 +13,7 @@ export interface GeocodeToolOutput extends GeocodeResult {}
  * 住所文字列から座標を取得します
  */
 @Injectable()
-export class GeocodeService implements McpToolWithDefinition {
+export class GeocodeService implements McpToolWithDefinition<GeocodeToolInput, GeocodeToolOutput> {
   readonly name = 'geocode';
   private readonly logger = new Logger(GeocodeService.name);
 
