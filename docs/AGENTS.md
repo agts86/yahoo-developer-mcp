@@ -263,7 +263,60 @@ import type { ToolResponse } from '../../domain/mcp/tool-response.interface.js';
 - `@ts-ignore`の使用
 - 型安全性を犠牲にした実装
 
-## 10. コミュニケーションの原則
+## 10. コード複雑度管理の原則
+
+### ✅ やるべきこと
+
+- **循環的複雑度を10以下に保つ**: 関数・メソッドの循環的複雑度（Cyclomatic Complexity）は必ず10以下にする
+- **複雑になる場合は相談**: 実装が複雑度10を超えそうな場合は、事前に設計を相談する
+- **関数の分割**: 複雑な処理は小さな関数に分割して可読性を向上させる
+- **早期リターン**: ネストを減らすため、条件チェックでの早期リターンを活用する
+
+```typescript
+// ✅ 良い例：複雑度が低く、早期リターンを使用
+async executeToolByName(toolName: string, params: unknown, yahooAppId: string): Promise<ToolResponse> {
+  if (!toolName) {
+    throw new Error('Tool name is required');
+  }
+  
+  const tool = this.findToolByName(toolName);
+  if (!tool) {
+    throw new Error(`Unknown tool: ${toolName}`);
+  }
+  
+  return await tool.execute(params, yahooAppId);
+}
+
+// ❌ 悪い例：ネストが深く複雑度が高い
+async processComplexLogic(data: unknown): Promise<unknown> {
+  if (data) {
+    if (typeof data === 'object') {
+      if (Array.isArray(data)) {
+        // ... 深いネスト構造
+      } else {
+        // ... さらに複雑な処理
+      }
+    }
+  }
+  // 複雑度が10を超える可能性がある
+}
+```
+
+### ❌ やってはいけないこと
+
+- 循環的複雑度10を超える関数・メソッドの実装
+- 相談なしで複雑な制御フローを持つコードの作成
+- 深いネスト（3階層を超える`if`文など）
+- 1つのメソッドに複数の責任を持たせること
+
+### 🤔 複雑度が10を超えそうな場合の対処
+
+1. **事前相談**: 実装前に設計アプローチを相談する
+2. **処理分割**: 複雑な処理を複数のメソッドに分割する
+3. **パターン適用**: Strategy パターンや State パターンなどの適用を検討する
+4. **リファクタリング**: 既存コードが複雑になった場合は積極的にリファクタリングする
+
+## 11. コミュニケーションの原則
 
 ### ✅ やるべきこと
 
