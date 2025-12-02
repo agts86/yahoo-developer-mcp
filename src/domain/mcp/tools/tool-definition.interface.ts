@@ -1,4 +1,4 @@
-import { McpTool } from './tool.interface.js';
+import type { McpTool } from './tool.interface.js';
 
 /**
  * MCPツール定義インターフェース

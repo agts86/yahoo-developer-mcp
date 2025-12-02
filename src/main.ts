@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
-import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
+import type { NestFastifyApplication } from '@nestjs/platform-fastify';
+import { FastifyAdapter } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 
@@ -8,7 +9,7 @@ import { AppModule } from './app.module.js';
  * アプリケーションのブートストラップ関数
  * NestJS Fastifyサーバーを起動し、CORS設定を適用します
  */
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   // HTTPモード: NestJS Fastifyサーバーを起動
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
@@ -26,18 +27,21 @@ async function bootstrap() {
   });
 
   if (isDevelopment) {
-    await setupSwagger(app);
+    setupSwagger(app);
   }
 
   const port = process.env.PORT || 3000;
   await app.listen(port, '0.0.0.0');
+  // eslint-disable-next-line no-console
   console.log(`Yahoo Developer MCP Server running on http://localhost:${port}`);
   if (isDevelopment) {
+    // eslint-disable-next-line no-console
     console.log(`Swagger UI available at http://localhost:${port}/swagger`);
   }
 }
 
 bootstrap().catch((error) => {
+  // eslint-disable-next-line no-console
   console.error('Server startup error:', error);
   process.exit(1);
 });
@@ -46,7 +50,7 @@ bootstrap().catch((error) => {
  * 開発モード向けのSwaggerセットアップ
  * Fastify環境でOpenAPI/Swagger UIを有効化する
  */
-async function setupSwagger(app: NestFastifyApplication) {
+function setupSwagger(app: NestFastifyApplication): void {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Yahoo Developer MCP API')
     .setDescription('MCP HTTPエンドポイントの開発用ドキュメント')

@@ -1,6 +1,11 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Logger } from '@nestjs/common';
 import { AppConfigProvider } from '../../infrastructure/config/app-config.provider.js';
 
+interface RequestWithYahooAppId {
+  headers: Record<string, string | string[] | undefined>;
+  yahooAppId?: string;
+}
+
 /**
  * Yahoo API Key認証ガード
  * HTTPリクエストのヘッダーからYahoo API Keyを検証し、アクセスを制御します
@@ -22,14 +27,14 @@ export class YahooApiKeyGuard implements CanActivate {
    * @throws UnauthorizedException - 認証が失敗した場合
    */
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest();
-    const authHeader = request.headers['authorization'];
+    const request = context.switchToHttp().getRequest<RequestWithYahooAppId>();
+    const authHeader = request.headers.authorization;
 
     this.logger.debug(`Auth attempt - Authorization: ${authHeader ? '[PRESENT]' : '[MISSING]'}`);
 
     try {
       // ヘッダーからYahoo API Keyを抽出
-      const yahooAppId = this.configService.extractYahooApiKey(authHeader);
+      const yahooAppId = this.configService.extractYahooApiKey(typeof authHeader === 'string' ? authHeader : undefined);
       
       // API Keyが存在するかチェック
       if (!yahooAppId || yahooAppId.trim() === '') {

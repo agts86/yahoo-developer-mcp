@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { IHttpClient, HttpRequestOptions, HttpError } from './IHttpClient.js';
+import type { IHttpClient, HttpRequestOptions} from './IHttpClient.js';
+import { HttpError } from './IHttpClient.js';
 
 /**
  * ベースURLにクエリパラメータを付加して完全なURLを構築します
@@ -9,13 +10,26 @@ import { IHttpClient, HttpRequestOptions, HttpError } from './IHttpClient.js';
  */
 function buildUrl<TQuery extends object>(base: string, query?: TQuery): string {
   if (!query || Object.keys(query).length === 0) return base;
+  
   const params = new URLSearchParams();
   for (const [k, v] of Object.entries(query as Record<string, unknown>)) {
-    if (v === undefined) continue;
-    params.set(k, String(v));
+    if (v != null) { // nullish coalescing: null と undefined を同時にチェック
+      params.set(k, convertToString(v));
+    }
   }
+  
   const sep = base.includes('?') ? '&' : '?';
   return base + sep + params.toString();
+}
+
+/**
+ * 値を文字列に安全に変換します
+ * nullとundefinedは除外済みなので、実際の値のみを変換
+ */
+function convertToString(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return JSON.stringify(value);
 }
 
 /**
@@ -38,22 +52,61 @@ export class HttpClient implements IHttpClient {
         ...config,
         validateStatus: () => true,
       });
-      if (res.status < 200 || res.status >= 300) {
-        throw new HttpError(res.status, `HTTP ${res.status} for ${config.url}`, res.data);
-      }
+      
+      this.validateResponse(res, config.url);
       return res.data as T;
     } catch (err: unknown) {
-      if (err instanceof HttpError) throw err;
-      
-      // err が axios エラーオブジェクトかどうかチェック
-      const isAxiosError = err && typeof err === 'object' && 'response' in err;
-      const axiosErr = isAxiosError ? err as { response?: { status?: number; data?: unknown }; message?: string } : null;
-      
-      const status = axiosErr?.response?.status ?? 0;
-      const details = axiosErr?.response?.data;
-      const reason = axiosErr?.message ?? String(err);
-      throw new HttpError(status, `HTTP error for ${config.url}: ${reason}`, details);
+      const error = this.handleRequestError(err, config.url);
+      throw error;
     }
+  }
+
+  /**
+   * レスポンスのステータスコードを検証
+   */
+  private validateResponse(res: { status: number; data: unknown }, url: string): void {
+    if (res.status < 200 || res.status >= 300) {
+      throw new HttpError(res.status, `HTTP ${res.status} for ${url}`, res.data);
+    }
+  }
+
+  /**
+   * リクエストエラーを処理
+   */
+  private handleRequestError(err: unknown, url: string): HttpError {
+    if (err instanceof HttpError) return err;
+    
+    const axiosError = this.parseAxiosError(err);
+    const httpError = this.createHttpErrorFromAxios(axiosError, url);
+    return httpError;
+  }
+
+  /**
+   * Axiosエラーをパースして必要な情報を取得
+   */
+  private parseAxiosError(err: unknown): { status: number; details: unknown; reason: string } {
+    const axiosErr = this.extractAxiosErrorData(err);
+    
+    return {
+      status: axiosErr?.response?.status ?? 0,
+      details: axiosErr?.response?.data,
+      reason: axiosErr?.message ?? String(err)
+    };
+  }
+
+  /**
+   * Axiosエラーのデータを抽出
+   */
+  private extractAxiosErrorData(err: unknown): { response?: { status?: number; data?: unknown }; message?: string } | null {
+    const isAxiosError = err && typeof err === 'object' && 'response' in err;
+    return isAxiosError ? err as { response?: { status?: number; data?: unknown }; message?: string } : null;
+  }
+
+  /**
+   * AxiosエラーからHttpErrorを生成
+   */
+  private createHttpErrorFromAxios(error: { status: number; details: unknown; reason: string }, url: string): HttpError {
+    return new HttpError(error.status, `HTTP error for ${url}: ${error.reason}`, error.details);
   }
 
   /**

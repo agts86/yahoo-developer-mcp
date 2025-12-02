@@ -1,4 +1,4 @@
-import { LocalSearchParams, GeocodeParams, ReverseGeocodeParams } from '../../yahoo/yahoo.types.js';
+import type { LocalSearchParams, GeocodeParams, ReverseGeocodeParams } from '../../yahoo/yahoo.types.js';
 
 export interface LocalSearchQuery {
   appid: string;

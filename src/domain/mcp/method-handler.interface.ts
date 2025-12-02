@@ -1,7 +1,7 @@
 /**
  * MCPメソッドハンドラーのインターフェース
  */
-import { McpMessage } from './mcp-message.interface.js';
+import type { McpMessage } from './mcp-message.interface.js';
 
 export interface McpMethodHandler<Params = unknown, Response = unknown> {
   /**

@@ -5,8 +5,8 @@ import { GeocodeParams, GeocodeResult } from '../../../domain/yahoo/yahoo.types.
 import { McpToolDefinition, McpToolWithDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
 import { GeocodeQuery } from '../../../domain/mcp/queries/yahooQueries.js';
 
-export interface GeocodeToolInput extends GeocodeParams {}
-export interface GeocodeToolOutput extends GeocodeResult {}
+export type GeocodeToolInput = GeocodeParams;
+export type GeocodeToolOutput = GeocodeResult;
 
 /**
  * Yahoo!ジオコーダツールサービス
@@ -50,7 +50,7 @@ export class GeocodeService implements McpToolWithDefinition<GeocodeToolInput, G
       return result;
       
     } catch (error) {
-      this.logger.error(`Geocode Tool Error: ${error}`, error);
+      this.logger.error(`Geocode Tool Error: ${error instanceof Error ? error.message : String(error)}`, error);
       throw error;
     }
   }

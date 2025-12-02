@@ -81,7 +81,8 @@ export class McpService {
     const handler = this.methodHandlers.find(h => h.method === method);
     
     if (!handler) {
-      throw this.createMethodNotFoundError(message.id, method);
+      const error = this.createMethodNotFoundError(message.id, method);
+      throw error;
     }
     
     return await handler.handle(message, authHeader);
@@ -121,12 +122,12 @@ export class McpService {
    * @param method - 未対応のメソッド名
    * @throws メソッド未対応エラーをスロー
    */
-  private createMethodNotFoundError(messageId: string | undefined, method: string): never {
+  private createMethodNotFoundError(messageId: string | undefined, method: string): McpRpcError {
     const error = new Error(`Method not found: ${method}`) as McpRpcError;
     error.name = 'MethodNotFoundError';
     error.code = -32601;
     error.id = messageId;
-    throw error;
+    return error;
   }
 
   /**
@@ -161,7 +162,7 @@ export class McpService {
    * @returns フォーマットされたエラーレスポンス
    */
   formatToolError(error: unknown): ToolErrorResponse {
-    this.logger.error(`Tool execution error: ${error}`, error instanceof Error ? error.stack : undefined);
+    this.logger.error(`Tool execution error: ${error instanceof Error ? error.message : String(error)}`, error instanceof Error ? error.stack : undefined);
     
     return {
       content: [
@@ -181,7 +182,7 @@ export class McpService {
    * @throws 適切なHTTPExceptionをスロー
    */
   handleHttpMcpError(error: unknown, messageId?: string): never {
-    this.logger.error(`HTTP MCP Message handling error: ${error}`, error instanceof Error ? error.stack : undefined);
+    this.logger.error(`HTTP MCP Message handling error: ${error instanceof Error ? error.message : String(error)}`, error instanceof Error ? error.stack : undefined);
     
     const rpcError = this.toRpcError(error);
 
@@ -217,7 +218,7 @@ export class McpService {
    * @param request - Fastifyリクエストオブジェクト
    * @returns レスポンスオブジェクト
    */
-  handleSSEConnection(reply: FastifyReply, request: FastifyRequest) {
+  handleSSEConnection(reply: FastifyReply, request: FastifyRequest): FastifyReply {
     this.logger.debug('SSE connection requested');
     
     // SSEヘッダーを設定

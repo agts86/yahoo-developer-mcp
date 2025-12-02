@@ -5,8 +5,8 @@ import { ReverseGeocodeParams, ReverseGeocodeResult } from '../../../domain/yaho
 import { McpToolDefinition, McpToolWithDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
 import { ReverseGeocodeQuery } from '../../../domain/mcp/queries/yahooQueries.js';
 
-export interface ReverseGeocodeToolInput extends ReverseGeocodeParams {}
-export interface ReverseGeocodeToolOutput extends ReverseGeocodeResult {}
+export type ReverseGeocodeToolInput = ReverseGeocodeParams;
+export type ReverseGeocodeToolOutput = ReverseGeocodeResult;
 
 /**
  * Yahoo!リバースジオコーダツールサービス
@@ -53,7 +53,7 @@ export class ReverseGeocodeService implements McpToolWithDefinition<ReverseGeoco
       return result;
       
     } catch (error) {
-      this.logger.error(`Reverse Geocode Tool Error: ${error}`, error);
+      this.logger.error(`Reverse Geocode Tool Error: ${error instanceof Error ? error.message : String(error)}`, error);
       throw error;
     }
   }

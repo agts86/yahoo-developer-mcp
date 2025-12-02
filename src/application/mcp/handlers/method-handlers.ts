@@ -74,7 +74,7 @@ export class LoggingSetLevelHandler implements McpMethodHandler {
    * @param message - MCPメッセージ
    * @returns ログレベル設定レスポンス
    */
-  handle(message: McpMessage<LoggingSetLevelParams>): McpBaseResponse<{}> {
+  handle(message: McpMessage<LoggingSetLevelParams>): McpBaseResponse<Record<string, never>> {
     this.logger.log(`Setting log level to: ${message.params?.level || 'info'}`);
     return {
       jsonrpc: '2.0',
@@ -165,7 +165,7 @@ export class ToolsCallHandler implements McpMethodHandler {
         }
       };
     } catch (error) {
-      this.logger.error(`Tool execution error: ${error}`, error);
+      this.logger.error(`Tool execution error: ${error instanceof Error ? error.message : String(error)}`, error);
       return {
         jsonrpc: '2.0',
         id: message.id,

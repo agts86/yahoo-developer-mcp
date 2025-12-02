@@ -40,7 +40,7 @@ export function getAndAdvance(k: PagingKey, pageSize: number, reset: boolean, ex
     state = undefined;
     store.delete(key);
   }
-  let currentOffset = explicitOffset ?? state?.offset ?? 0;
+  const currentOffset = explicitOffset ?? state?.offset ?? 0;
   // Prepare next offset (assume more data until caller determines end)
   const nextOffset = currentOffset + pageSize;
   store.set(key, { offset: nextOffset, updatedAt: now });
