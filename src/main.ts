@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
@@ -10,6 +11,7 @@ import { AppModule } from './app.module.js';
  * NestJS Fastifyサーバーを起動し、CORS設定を適用します
  */
 async function bootstrap(): Promise<void> {
+  const logger = new Logger('Bootstrap');
   // HTTPモード: NestJS Fastifyサーバーを起動
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
@@ -32,17 +34,15 @@ async function bootstrap(): Promise<void> {
 
   const port = process.env.PORT || 3000;
   await app.listen(port, '0.0.0.0');
-  // eslint-disable-next-line no-console
-  console.log(`Yahoo Developer MCP Server running on http://localhost:${port}`);
+  logger.log(`Yahoo Developer MCP Server running on http://localhost:${port}`);
   if (isDevelopment) {
-    // eslint-disable-next-line no-console
-    console.log(`Swagger UI available at http://localhost:${port}/swagger`);
+    logger.log(`Swagger UI available at http://localhost:${port}/swagger`);
   }
 }
 
 bootstrap().catch((error) => {
-  // eslint-disable-next-line no-console
-  console.error('Server startup error:', error);
+  const logger = new Logger('Bootstrap');
+  logger.error('Server startup error:', error);
   process.exit(1);
 });
 
