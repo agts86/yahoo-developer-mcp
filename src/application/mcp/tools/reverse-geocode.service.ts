@@ -5,15 +5,12 @@ import { ReverseGeocodeParams, ReverseGeocodeResult } from '../../../domain/yaho
 import { McpToolDefinition, McpToolWithDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
 import { ReverseGeocodeQuery } from '../../../domain/mcp/queries/yahooQueries.js';
 
-export type ReverseGeocodeToolInput = ReverseGeocodeParams;
-export type ReverseGeocodeToolOutput = ReverseGeocodeResult;
-
 /**
  * Yahoo!リバースジオコーダツールサービス
  * 座標から住所を取得します
  */
 @Injectable()
-export class ReverseGeocodeService implements McpToolWithDefinition<ReverseGeocodeToolInput, ReverseGeocodeToolOutput> {
+export class ReverseGeocodeService implements McpToolWithDefinition<ReverseGeocodeParams, ReverseGeocodeResult> {
   readonly name = 'reverseGeocode';
   private readonly logger = new Logger(ReverseGeocodeService.name);
 
@@ -32,7 +29,7 @@ export class ReverseGeocodeService implements McpToolWithDefinition<ReverseGeoco
    * @param yahooAppId Yahoo API Key
    * @returns リバースジオコーディングの結果
    */
-  async execute(input: ReverseGeocodeToolInput, yahooAppId: string): Promise<ReverseGeocodeToolOutput> {
+  async execute(input: ReverseGeocodeParams, yahooAppId: string): Promise<ReverseGeocodeResult> {
     this.logger.debug(`Reverse Geocode Tool Input: ${JSON.stringify(input)}`);
     
     if (input.lat === undefined || input.lng === undefined) {

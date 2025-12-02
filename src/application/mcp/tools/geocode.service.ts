@@ -5,15 +5,12 @@ import { GeocodeParams, GeocodeResult } from '../../../domain/yahoo/yahoo.types.
 import { McpToolDefinition, McpToolWithDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
 import { GeocodeQuery } from '../../../domain/mcp/queries/yahooQueries.js';
 
-export type GeocodeToolInput = GeocodeParams;
-export type GeocodeToolOutput = GeocodeResult;
-
 /**
  * Yahoo!ジオコーダツールサービス
  * 住所文字列から座標を取得します
  */
 @Injectable()
-export class GeocodeService implements McpToolWithDefinition<GeocodeToolInput, GeocodeToolOutput> {
+export class GeocodeService implements McpToolWithDefinition<GeocodeParams, GeocodeResult> {
   readonly name = 'geocode';
   private readonly logger = new Logger(GeocodeService.name);
 
@@ -32,7 +29,7 @@ export class GeocodeService implements McpToolWithDefinition<GeocodeToolInput, G
    * @param yahooAppId Yahoo API Key
    * @returns ジオコーディングの結果
    */
-  async execute(input: GeocodeToolInput, yahooAppId: string): Promise<GeocodeToolOutput> {
+  async execute(input: GeocodeParams, yahooAppId: string): Promise<GeocodeResult> {
     this.logger.debug(`Geocode Tool Input: ${JSON.stringify(input)}`);
     
     if (!input.query) throw new Error('geocode requires query');
