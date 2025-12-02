@@ -156,21 +156,18 @@ export interface McpResponse<T = unknown> {
 
 ```typescript
 @Injectable()
-export class McpService {
-  private readonly logger = new Logger(McpService.name);
-  private readonly tools: McpToolWithDefinition[];
+export class GeocodeService {
+  private readonly logger = new Logger(GeocodeService.name);
 
   constructor(
-    private readonly localSearchService: LocalSearchService,
-    private readonly geocodeService: GeocodeService,
-    private readonly reverseGeocodeService: ReverseGeocodeService,
-    private readonly configService: AppConfigProvider,
-  ) {
-    this.tools = [
-      this.localSearchService,
-      this.geocodeService, 
-      this.reverseGeocodeService,
-    ];
+    @Inject(MCP_REPOSITORY)
+    private readonly mcpRepository: IMcpRepository,
+    private readonly configService: AppConfigProvider
+  ) {}
+
+  async execute(input: GeocodeToolInput, yahooAppId: string): Promise<GeocodeToolOutput> {
+    this.logger.debug('Executing geocode tool');
+    // 実装
   }
 }
 ```
