@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
  */
 @Injectable()
 export class AppConfigProvider {
-  constructor(private configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) {}
 
   /** アプリケーションがリッスンするポート番号（デフォルト: 3000） */
   get port(): number {
