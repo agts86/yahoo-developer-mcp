@@ -334,6 +334,7 @@ async processComplexLogic(data: unknown): Promise<unknown> {
 
 ```bash
 # 必須の確認手順
+pnpm lint     # ESLintによるコード品質チェック
 pnpm build    # TypeScriptコンパイルの確認
 pnpm test     # 全テストの実行確認
 
@@ -427,11 +428,11 @@ return tool.execute();
 # 1. ESLintによるコード品質チェック（必須）
 pnpm lint
 
-# 2. テスト実行（必須）
-pnpm test
-
-# 3. ビルドチェック（必須）
+# 2. ビルドチェック（必須）
 pnpm build
+
+# 3. テスト実行（必須）
+pnpm test
 ```
 
 **ESLint設定による自動品質管理**
@@ -444,8 +445,8 @@ pnpm build
 ### ❌ やってはいけないこと
 
 - ESLintエラーが残った状態でコミット
-- `pnpm lint`、`pnpm test`、`pnpm build`を実行せずに修正完了とする
-- テスト失敗やビルドエラーが残った状態でコミット
+- `pnpm lint`、`pnpm build`、`pnpm test`を実行せずに修正完了とする
+- ビルドエラーやテスト失敗が残った状態でコミット
 - ESLintルールを無視する修正
 
 **AI向け特記事項（手順省略の禁止）**
@@ -457,4 +458,4 @@ pnpm build
 
 ---
 
-**重要**: この指示書に従って開発を行うことで、保守性が高く一貫性のあるコードベースを維持できます。新機能追加時や既存コード修正時は、必ずこれらの原則に従って実装し、**必ず`pnpm lint`、`pnpm test`、`pnpm build`の3つすべてを実行して品質チェックを行ってください**。
+**重要**: この指示書に従って開発を行うことで、保守性が高く一貫性のあるコードベースを維持できます。新機能追加時や既存コード修正時は、必ずこれらの原則に従って実装し、**必ず`pnpm lint`、`pnpm build`、`pnpm test`の順序で3つすべてを実行して品質チェックを行ってください**。
