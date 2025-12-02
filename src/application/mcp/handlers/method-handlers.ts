@@ -1,8 +1,49 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { McpMethodHandler } from '../../../domain/mcp/method-handler.interface.js';
-import { McpToolWithDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
+import { McpToolDefinition, McpToolWithDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
 import { AppConfigProvider } from '../../../infrastructure/config/app-config.provider.js';
 import { LoggingSetLevelParams, McpMessage, ToolsCallParams } from '../../../domain/mcp/mcp-message.interface.js';
+
+/**
+ * MCP初期化レスポンス型
+ */
+interface McpInitializeResponse {
+  jsonrpc: '2.0';
+  id?: string;
+  result: {
+    protocolVersion: string;
+    capabilities: {
+      tools: { listChanged: boolean };
+      logging: {
+        levels: string[];
+      };
+    };
+    serverInfo: {
+      name: string;
+      version: string;
+    };
+  };
+}
+
+/**
+ * MCPレスポンス基本型
+ */
+interface McpBaseResponse<T = unknown> {
+  jsonrpc: '2.0';
+  id?: string;
+  result?: T;
+}
+
+/**
+ * ツール実行結果型
+ */
+interface McpToolResult {
+  content: Array<{
+    type: 'text';
+    text: string;
+  }>;
+  isError?: boolean;
+}
 
 /**
  * MCP初期化ハンドラー
@@ -18,7 +59,7 @@ export class InitializeHandler implements McpMethodHandler {
    * @param message - MCPメッセージ
    * @returns 初期化レスポンス
    */
-  handle(message: McpMessage) {
+  handle(message: McpMessage): McpInitializeResponse {
     this.logger.log('Handling HTTP MCP initialize request');
     return {
       jsonrpc: '2.0',
@@ -53,7 +94,7 @@ export class NotificationsInitializedHandler implements McpMethodHandler {
    * 初期化完了通知を処理します
    * @returns void（通知なのでレスポンス不要）
    */
-  handle(_message: McpMessage) {
+  handle(_message: McpMessage): void {
     this.logger.log('HTTP MCP client initialized');
     return; // notification なのでレスポンス不要
   }
@@ -73,7 +114,7 @@ export class LoggingSetLevelHandler implements McpMethodHandler {
    * @param message - MCPメッセージ
    * @returns ログレベル設定レスポンス
    */
-  handle(message: McpMessage<LoggingSetLevelParams>) {
+  handle(message: McpMessage<LoggingSetLevelParams>): McpBaseResponse<{}> {
     this.logger.log(`Setting log level to: ${message.params?.level || 'info'}`);
     return {
       jsonrpc: '2.0',
@@ -102,7 +143,7 @@ export class ToolsListHandler implements McpMethodHandler {
    * @param message - MCPメッセージ
    * @returns ツールリストレスポンス
    */
-  handle(message: McpMessage) {
+  handle(message: McpMessage): McpBaseResponse<{ tools: McpToolDefinition[] }> {
     return {
       jsonrpc: '2.0',
       id: message.id,
@@ -138,7 +179,7 @@ export class ToolsCallHandler implements McpMethodHandler {
    * @param authHeader - 認証ヘッダー（オプション）
    * @returns ツール実行結果レスポンス
    */
-  async handle(message: McpMessage<ToolsCallParams>, authHeader?: string) {
+  async handle(message: McpMessage<ToolsCallParams>, authHeader?: string): Promise<McpBaseResponse<McpToolResult>> {
     const yahooAppId = this.configService.extractYahooApiKey(authHeader);
     const { name, arguments: args } = message.params ?? {};
 

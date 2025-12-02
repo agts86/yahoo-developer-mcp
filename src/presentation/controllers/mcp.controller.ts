@@ -14,6 +14,22 @@ import { AppConfigProvider } from '../../infrastructure/config/app-config.provid
 import { McpService } from '../../application/mcp/mcp.service.js';
 import { SSEInterceptor } from '../interceptors/sse.interceptor.js';
 import type { McpMessage } from '../../domain/mcp/mcp-message.interface.js';
+import type { McpToolDefinition } from '../../domain/mcp/tools/tool-definition.interface.js';
+import type { ToolResponse, ToolErrorResponse, McpServerInfo } from '../../domain/mcp/tool-response.interface.js';
+
+/**
+ * MCPプロトコルのレスポンス型
+ */
+interface McpResponse<T = unknown> {
+  jsonrpc: '2.0';
+  id?: string;
+  result?: T;
+  error?: {
+    code: number;
+    message: string;
+    data?: unknown;
+  };
+}
 
 /**
  * MCP ToolのHTTP APIコントローラー
@@ -40,7 +56,7 @@ export class McpController {
    */
   @Get()
   @UseInterceptors(SSEInterceptor)
-  getMcpInfo() {
+  getMcpInfo(): McpServerInfo {
     this.logger.debug('MCP base endpoint accessed');
     // SSE処理はインターセプターが自動処理
     // 通常のJSONレスポンスのみここで処理
@@ -57,7 +73,7 @@ export class McpController {
   async handleMcpPost(
     @Body() body: McpMessage,
     @Headers('authorization') authHeader?: string
-  ) {
+  ): Promise<unknown> {
     this.logger.debug(`MCP POST Message: ${JSON.stringify(body)}`);
 
     try {
@@ -75,7 +91,7 @@ export class McpController {
    */
   @Get('tools')
   @UseGuards(YahooApiKeyGuard)  
-  getTools() {
+  getTools(): { tools: McpToolDefinition[] } {
     return {
       tools: this.mcpService.getHttpToolsDefinition()
     };
@@ -93,7 +109,7 @@ export class McpController {
     @Param('toolName') toolName: string,
     @Body() input: Record<string, unknown>,
     @Headers('authorization') authHeader?: string
-  ) {
+  ): Promise<ToolResponse | ToolErrorResponse> {
     this.logger.debug(`Tool invocation: ${toolName} with input: ${JSON.stringify(input)}`);
 
     try {

@@ -15,6 +15,7 @@
         "isolatedModules": true,
         "sourceMap": true,
         "inlineSources": true,
+        "noImplicitAny": true,
         "types": [
             "node",
             "jest"

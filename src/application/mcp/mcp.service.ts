@@ -7,6 +7,7 @@ import { AppConfigProvider } from '../../infrastructure/config/app-config.provid
 import { McpToolDefinition, McpToolWithDefinition } from '../../domain/mcp/tools/tool-definition.interface.js';
 import { McpMethodHandler } from '../../domain/mcp/method-handler.interface.js';
 import { McpMessage } from '../../domain/mcp/mcp-message.interface.js';
+import { ToolResponse, ToolErrorResponse, McpServerInfo } from '../../domain/mcp/tool-response.interface.js';
 import { 
   InitializeHandler, 
   NotificationsInitializedHandler, 
@@ -63,7 +64,7 @@ export class McpService {
    * @param authHeader - 認証ヘッダー（オプション）
    * @returns 処理結果
    */
-  async handleHttpMcpMessage(message: McpMessage, authHeader?: string) {
+  async handleHttpMcpMessage(message: McpMessage, authHeader?: string): Promise<unknown> {
     this.logger.debug(`Processing HTTP MCP message: ${message.method}`);
     return await this.dispatchHttpMcpMethod(message, authHeader);
   }
@@ -75,7 +76,7 @@ export class McpService {
    * @returns メソッド実行結果
    * @throws メソッドが見つからない場合にエラーをスロー
    */
-  private async dispatchHttpMcpMethod(message: McpMessage, authHeader?: string) {
+  private async dispatchHttpMcpMethod(message: McpMessage, authHeader?: string): Promise<unknown> {
     const method = message.method;
     const handler = this.methodHandlers.find(h => h.method === method);
     
@@ -96,7 +97,7 @@ export class McpService {
    * @returns ツール実行結果
    * @throws ツールが見つからない場合にエラーをスロー
    */
-  async executeToolByName(toolName: string, input: Record<string, unknown>, yahooAppId: string) {
+  async executeToolByName(toolName: string, input: Record<string, unknown>, yahooAppId: string): Promise<unknown> {
     const tool = this.tools.find(t => t.name === toolName);
     if (!tool) {
       const error = new Error(`Unknown tool: ${toolName}`);
@@ -120,7 +121,7 @@ export class McpService {
    * @param method - 未対応のメソッド名
    * @throws メソッド未対応エラーをスロー
    */
-  private createMethodNotFoundError(messageId: string | undefined, method: string) {
+  private createMethodNotFoundError(messageId: string | undefined, method: string): never {
     const error = new Error(`Method not found: ${method}`) as McpRpcError;
     error.name = 'MethodNotFoundError';
     error.code = -32601;
@@ -143,7 +144,7 @@ export class McpService {
    * @param result - ツール実行結果
    * @returns フォーマットされたレスポンス
    */
-  formatToolResponse(result: unknown) {
+  formatToolResponse(result: unknown): ToolResponse {
     return {
       content: [
         {
@@ -159,7 +160,7 @@ export class McpService {
    * @param error - エラーオブジェクト
    * @returns フォーマットされたエラーレスポンス
    */
-  formatToolError(error: unknown) {
+  formatToolError(error: unknown): ToolErrorResponse {
     this.logger.error(`Tool execution error: ${error}`, error instanceof Error ? error.stack : undefined);
     
     return {
@@ -177,9 +178,9 @@ export class McpService {
    * HTTP MCP エラーハンドリング
    * @param error - エラーオブジェクト
    * @param messageId - メッセージID（オプション）
-   * @throws 適切なHTTPエクセプションをスロー
+   * @throws 適切なHTTPExceptionをスロー
    */
-  handleHttpMcpError(error: unknown, messageId?: string) {
+  handleHttpMcpError(error: unknown, messageId?: string): never {
     this.logger.error(`HTTP MCP Message handling error: ${error}`, error instanceof Error ? error.stack : undefined);
     
     const rpcError = this.toRpcError(error);
@@ -265,7 +266,7 @@ export class McpService {
    * MCP情報レスポンスを生成
    * @returns MCPサーバー情報レスポンス
    */
-  getMcpInfoResponse() {
+  getMcpInfoResponse(): McpServerInfo {
     return {
       name: 'yahoo-developer-mcp',
       version: '0.1.0',
