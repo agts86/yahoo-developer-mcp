@@ -7,12 +7,10 @@ import { SSEInterceptor } from '../interceptors/sse.interceptor.js';
 import { LocalSearchService } from '../../application/mcp/tools/local-search.service.js';
 import { GeocodeService } from '../../application/mcp/tools/geocode.service.js';
 import { ReverseGeocodeService } from '../../application/mcp/tools/reverse-geocode.service.js';
-import { MCP_REPOSITORY } from '../../domain/mcp/imcp.repository.js';
-import { McpRepository } from '../../infrastructure/mcp/mcp-repository.js';
-import { HttpModule } from '../../infrastructure/http/http.module.js';
+import { McpRepositoryModule } from '../../infrastructure/mcp/mcp-repository.module.js';
 
 @Module({
-  imports: [HttpModule],
+  imports: [McpRepositoryModule],
   controllers: [McpController],
   providers: [
     McpService,
@@ -22,10 +20,6 @@ import { HttpModule } from '../../infrastructure/http/http.module.js';
     LocalSearchService,
     GeocodeService,
     ReverseGeocodeService,
-    {
-      provide: MCP_REPOSITORY,
-      useClass: McpRepository,
-    },
   ],
   exports: [McpService],
 })
