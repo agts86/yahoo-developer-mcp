@@ -16,20 +16,7 @@ import { SSEInterceptor } from '../interceptors/sse.interceptor.js';
 import type { McpMessage } from '../../domain/mcp/mcp-message.interface.js';
 import type { McpToolDefinition } from '../../domain/mcp/tools/tool-definition.interface.js';
 import type { ToolResponse, ToolErrorResponse, McpServerInfo } from '../../domain/mcp/tool-response.interface.js';
-
-/**
- * MCPプロトコルのレスポンス型
- */
-interface McpResponse<T = unknown> {
-  jsonrpc: '2.0';
-  id?: string;
-  result?: T;
-  error?: {
-    code: number;
-    message: string;
-    data?: unknown;
-  };
-}
+import type { McpResponse } from '../../domain/mcp/mcp-response.interface.js';
 
 /**
  * MCP ToolのHTTP APIコントローラー

@@ -3,8 +3,8 @@ export interface HttpRequestOptions<TQuery extends object = Record<string, unkno
 }
 
 export interface IHttpClient {
-  get<T = any>(url: string, options?: Omit<HttpRequestOptions, 'method'>): Promise<T>;
-  post<T = any, TBody = unknown>(url: string, body: TBody, options?: Omit<HttpRequestOptions, 'method'>): Promise<T>;
+  get<T = unknown>(url: string, options?: Omit<HttpRequestOptions, 'method'>): Promise<T>;
+  post<T = unknown, TBody = unknown>(url: string, body: TBody, options?: Omit<HttpRequestOptions, 'method'>): Promise<T>;
 }
 
 /**
@@ -17,7 +17,7 @@ export class HttpError extends Error {
    * @param message - エラーメッセージ
    * @param details - エラーの詳細情報（オプション）
    */
-  constructor(public status: number, message: string, public details?: any) {
+  constructor(public status: number, message: string, public details?: unknown) {
     super(message);
   }
 }

@@ -3,47 +3,7 @@ import { McpMethodHandler } from '../../../domain/mcp/method-handler.interface.j
 import { McpToolDefinition, McpToolWithDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
 import { AppConfigProvider } from '../../../infrastructure/config/app-config.provider.js';
 import { LoggingSetLevelParams, McpMessage, ToolsCallParams } from '../../../domain/mcp/mcp-message.interface.js';
-
-/**
- * MCP初期化レスポンス型
- */
-interface McpInitializeResponse {
-  jsonrpc: '2.0';
-  id?: string;
-  result: {
-    protocolVersion: string;
-    capabilities: {
-      tools: { listChanged: boolean };
-      logging: {
-        levels: string[];
-      };
-    };
-    serverInfo: {
-      name: string;
-      version: string;
-    };
-  };
-}
-
-/**
- * MCPレスポンス基本型
- */
-interface McpBaseResponse<T = unknown> {
-  jsonrpc: '2.0';
-  id?: string;
-  result?: T;
-}
-
-/**
- * ツール実行結果型
- */
-interface McpToolResult {
-  content: Array<{
-    type: 'text';
-    text: string;
-  }>;
-  isError?: boolean;
-}
+import { McpInitializeResponse, McpBaseResponse, McpToolResult } from '../../../domain/mcp/mcp-response.interface.js';
 
 /**
  * MCP初期化ハンドラー

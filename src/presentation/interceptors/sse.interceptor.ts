@@ -22,14 +22,18 @@ export class SSEInterceptor implements NestInterceptor {
    * @param next - 次のハンドラー
    * @returns Observable、Promise、またはSSE処理結果
    */
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> | Promise<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest<FastifyRequest>();
     const reply = context.switchToHttp().getResponse<FastifyReply>();
     
     // SSEリクエストを検出
     if (request.headers.accept?.includes('text/event-stream')) {
       // SSE処理を実行してリクエストを終了
-      return Promise.resolve(this.mcpService.handleSSEConnection(reply, request));
+      this.mcpService.handleSSEConnection(reply, request);
+      // 空のObservableを返す（レスポンスは既にSSE処理で送信済み）
+      return new Observable(subscriber => {
+        subscriber.complete();
+      });
     }
     
     // 通常のリクエスト処理を続行

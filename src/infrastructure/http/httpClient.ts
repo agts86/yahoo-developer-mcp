@@ -42,11 +42,16 @@ export class HttpClient implements IHttpClient {
         throw new HttpError(res.status, `HTTP ${res.status} for ${config.url}`, res.data);
       }
       return res.data as T;
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof HttpError) throw err;
-      const status = err?.response?.status ?? 0;
-      const details = err?.response?.data;
-      const reason = err?.message ?? String(err);
+      
+      // err が axios エラーオブジェクトかどうかチェック
+      const isAxiosError = err && typeof err === 'object' && 'response' in err;
+      const axiosErr = isAxiosError ? err as { response?: { status?: number; data?: unknown }; message?: string } : null;
+      
+      const status = axiosErr?.response?.status ?? 0;
+      const details = axiosErr?.response?.data;
+      const reason = axiosErr?.message ?? String(err);
       throw new HttpError(status, `HTTP error for ${config.url}: ${reason}`, details);
     }
   }
@@ -59,7 +64,7 @@ export class HttpClient implements IHttpClient {
     return this.send<T>({
       url: fullUrl,
       method: 'GET',
-      headers: options.headers as any,
+      headers: options.headers as Record<string, string>,
     });
   }
 
@@ -71,7 +76,7 @@ export class HttpClient implements IHttpClient {
     return this.send<T>({
       url: fullUrl,
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(options.headers as any || {}) },
+      headers: { 'Content-Type': 'application/json', ...(options.headers as Record<string, string> || {}) },
       data: body
     });
   }
