@@ -6,12 +6,10 @@ services:
     container_name: yahoo-mcp-dev
     ports:
       - "3000:3000"
+      - "9229:9229"
     volumes:
-      # ソースコードのホットリロード用
-      - ./src:/app/src
-      - ./package.json:/app/package.json
-      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml
-      - ./tsconfig.json:/app/tsconfig.json
+      # ソースコード全体をバインドしてホットリロード
+      - ./:/app
       # node_modulesはDockerコンテナ内のものを使用
       - /app/node_modules
     environment:

@@ -33,6 +33,21 @@ pnpm start
 pnpm dev
 ```
 
+## Docker で開発する
+開発用コンテナを使えば Node のバージョンや依存を気にせず手元のエディタで編集できます（ファイル変更は自動リロード）。
+
+```bash
+# ビルド＆起動
+docker compose up --build
+
+# 別ターミナルでテストなど実行
+docker compose exec app pnpm test
+```
+
+- `./docker-compose.yml` は `Dockerfile.dev` を利用します。初回ビルド時にコンテナ内へ `pnpm install` 済み。
+- リポジトリ全体を `/app` にバインドし、`node --watch` でソース変更時にサーバーを再起動します。
+- `.env` を置いておくと `--env-file` で読み込まれ、`MCP_MODE=http` がデフォルト設定されます。
+
 ## MCP クライアントでの使用
 
 1. HTTPサーバーを起動:

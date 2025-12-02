@@ -21,6 +21,7 @@ COPY . .
 
 # ポート3000を公開
 EXPOSE 3000
+EXPOSE 9229
 
 # 開発用の起動コマンド（ホットリロード対応）
-CMD ["sh", "-c", "if [ -f .env ]; then MCP_MODE=http node --env-file=.env --loader ts-node/esm src/main.ts; else MCP_MODE=http node --loader ts-node/esm src/main.ts; fi"]
+CMD ["sh", "-c", "if [ -f .env ]; then MCP_MODE=http node --inspect=0.0.0.0:9229 --watch --env-file=.env --loader ts-node/esm src/main.ts; else MCP_MODE=http node --inspect=0.0.0.0:9229 --watch --loader ts-node/esm src/main.ts; fi"]
