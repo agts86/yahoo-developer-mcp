@@ -20,6 +20,7 @@
 - 外部システム（HTTP、データベース、ファイルシステム）との実際の通信
 - Domainのインターフェースを実装する
 - 設定管理・HTTP クライアント等の技術的関心事を配置
+- **リポジトリパターン**: Domain層でインターフェースを定義し、Infrastructure層で`implements`により実装する
 
 **Presentation層（src/presentation/）**
 - HTTP エンドポイント・ガード・インターセプターなど
@@ -155,26 +156,35 @@ export interface McpResponse<T = unknown> {
 ### ✅ やるべきこと
 
 ```typescript
+// Domain層: インターフェース定義
+export interface IMcpRepository {
+  geocode(query: GeocodeQuery): Promise<GeocodeResult>;
+  localSearch(query: LocalSearchQuery): Promise<LocalSearchResult>;
+}
+
+// Infrastructure層: インターフェース実装
+@Injectable()
+export class McpRepository implements IMcpRepository {
+  constructor(private readonly httpClient: HttpClient) {}
+  
+  async geocode(query: GeocodeQuery): Promise<GeocodeResult> {
+    // 外部API呼び出し実装
+  }
+}
+
+// Application層: インターフェース注入
 @Injectable()
 export class GeocodeService {
-  private readonly logger = new Logger(GeocodeService.name);
-
   constructor(
     @Inject(MCP_REPOSITORY)
-    private readonly mcpRepository: IMcpRepository,
-    private readonly configService: AppConfigProvider
+    private readonly mcpRepository: IMcpRepository
   ) {}
-
-  async execute(input: GeocodeToolInput, yahooAppId: string): Promise<GeocodeToolOutput> {
-    this.logger.debug('Executing geocode tool');
-    // 実装
-  }
 }
 ```
 
+- **リポジトリパターン**: Domain層でインターフェース定義、Infrastructure層で実装
 - コンストラクタ注入を使用する
 - `readonly`修飾子でイミュータブル性を保つ
-- `Logger`でログ機能を統一
 - 依存性は抽象（インターフェース）に対して行う
 
 ### ❌ やってはいけないこと
