@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { McpModule } from './presentation/mcp/mcp.module.js';
+import { McpModule } from './presentation/controllers/mcp/mcp.module.js';
 
 @Module({
   imports: [

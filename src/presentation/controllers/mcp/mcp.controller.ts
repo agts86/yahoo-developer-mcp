@@ -9,13 +9,13 @@ import {
   Get,
   Logger
 } from '@nestjs/common';
-import { YahooApiKeyGuard } from '../guards/yahoo-api-key.guard.js';
-import { AppConfigProvider } from '../../infrastructure/config/app-config.provider.js';
-import { McpService } from '../../application/mcp/mcp.service.js';
-import { SSEInterceptor } from '../interceptors/sse.interceptor.js';
-import type { McpMessage } from '../../domain/mcp/mcp-message.interface.js';
-import type { McpToolDefinition } from '../../domain/mcp/tools/tool-definition.interface.js';
-import type { ToolResponse, ToolErrorResponse, McpServerInfo } from '../../domain/mcp/tool-response.interface.js';
+import { YahooApiKeyGuard } from '../../guards/yahoo-api-key.guard.js';
+import { AppConfigProvider } from '../../../infrastructure/config/app-config.provider.js';
+import { McpService } from '../../../application/mcp/mcp.service.js';
+import { SSEInterceptor } from '../../interceptors/sse.interceptor.js';
+import type { McpMessage } from '../../../domain/mcp/mcp-message.interface.js';
+import type { McpToolDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
+import type { ToolResponse, ToolErrorResponse, McpServerInfo } from '../../../domain/mcp/tool-response.interface.js';
 
 /**
  * MCP ToolのHTTP APIコントローラー
