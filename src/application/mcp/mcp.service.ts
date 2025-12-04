@@ -220,7 +220,10 @@ export class McpService {
    */
   handleSSEConnection(reply: FastifyReply, request: FastifyRequest): FastifyReply {
     this.logger.debug('SSE connection requested');
-    
+
+    // Fastifyの自動レスポンス処理を停止し、手動でSSEレスポンスを制御
+    reply.hijack();
+
     // SSEヘッダーを設定
     reply.raw.writeHead(200, {
       'Content-Type': 'text/event-stream',

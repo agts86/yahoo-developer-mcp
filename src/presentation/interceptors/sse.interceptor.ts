@@ -1,5 +1,5 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { McpService } from '../../application/mcp/mcp.service.js';
 
@@ -30,10 +30,8 @@ export class SSEInterceptor implements NestInterceptor {
     if (request.headers.accept?.includes('text/event-stream')) {
       // SSE処理を実行してリクエストを終了
       this.mcpService.handleSSEConnection(reply, request);
-      // 空のObservableを返す（レスポンスは既にSSE処理で送信済み）
-      return new Observable(subscriber => {
-        subscriber.complete();
-      });
+      // Nest内部のlastValueFromでEmptyErrorにならないよう、ダミー値を返す
+      return of(reply);
     }
     
     // 通常のリクエスト処理を続行
