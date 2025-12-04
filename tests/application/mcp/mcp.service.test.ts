@@ -123,4 +123,70 @@ describe('McpService', () => {
       { name: 'reverseGeocode' }
     ]);
   });
+
+  test('handleStreamableHttpRequest で必須ヘッダーを補完し処理を委譲する', async () => {
+    const request = {
+      raw: {
+        headers: {},
+        method: 'POST'
+      },
+      body: undefined
+    } as any;
+    const reply = {
+      hijack: jest.fn(),
+      raw: {
+        on: jest.fn(),
+        writableEnded: false,
+        writeHead: jest.fn(),
+        end: jest.fn()
+      }
+    } as any;
+
+    const server = { connect: jest.fn(), close: jest.fn() };
+    const transport = { handleRequest: jest.fn(), close: jest.fn() };
+
+    jest.spyOn(service as any, 'createStreamableContext').mockReturnValue({ server, transport });
+    const runSpy = jest.spyOn(service as any, 'runStreamableHandling').mockResolvedValue(undefined);
+
+    await service.handleStreamableHttpRequest(request, reply);
+
+    expect(request.raw.headers['accept']).toBe('application/json, text/event-stream');
+    expect(request.raw.headers['content-type']).toBe('application/json');
+    expect(reply.hijack).toHaveBeenCalled();
+    expect(runSpy).toHaveBeenCalledWith(request, reply, server, transport);
+  });
+
+  test('runStreamableHandling で例外時に 500 を返しクリーンアップする', async () => {
+    const request = {
+      raw: {
+        headers: { accept: 'application/json' },
+        method: 'GET',
+        on: jest.fn()
+      }
+    } as any;
+    const reply = {
+      raw: {
+        on: jest.fn(),
+        writableEnded: false,
+        writeHead: jest.fn(),
+        end: jest.fn()
+      }
+    } as any;
+
+    const server = {
+      connect: jest.fn(),
+      close: jest.fn()
+    } as any;
+    const transport = {
+      handleRequest: jest.fn().mockRejectedValue(new Error('boom')),
+      close: jest.fn()
+    } as any;
+
+    await (service as any).runStreamableHandling(request, reply, server, transport);
+
+    expect(reply.raw.writeHead).toHaveBeenCalledWith(500, { 'Content-Type': 'application/json' });
+    expect(reply.raw.end).toHaveBeenCalled();
+    expect(server.close).toHaveBeenCalled();
+    expect(transport.close).toHaveBeenCalled();
+  });
 });

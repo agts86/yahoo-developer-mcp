@@ -1,5 +1,11 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
-import { FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { z } from 'zod';
+import type { ToolCallback } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
+import type { ServerNotification, ServerRequest, CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { LocalSearchService } from './tools/local-search.service.js';
 import { GeocodeService } from './tools/geocode.service.js';
 import { ReverseGeocodeService } from './tools/reverse-geocode.service.js';
@@ -286,6 +292,351 @@ export class McpService {
         invokeTool: '/mcp/tools/{toolName}'
       }
     };
+  }
+
+  /**
+   * Codexが期待する Streamable HTTP MCP エンドポイントを処理
+   * @param request - Fastifyリクエスト
+   * @param reply - Fastifyレスポンス
+   */
+  async handleStreamableHttpRequest(
+    request: FastifyRequest,
+    reply: FastifyReply
+  ): Promise<void> {
+    this.ensureAcceptHeader(request);
+    this.ensureContentTypeHeader(request);
+    const { server, transport } = this.createStreamableContext();
+    this.hijackReply(reply, server, transport);
+    await this.runStreamableHandling(request, reply, server, transport);
+  }
+
+  /**
+   * CodexクライアントがAcceptを省略する場合に備え、必須ヘッダーを補完
+   */
+  private ensureAcceptHeader(request: FastifyRequest): void {
+    const acceptHeader = request.raw.headers['accept'];
+    const accept = Array.isArray(acceptHeader) ? acceptHeader.join(',') : acceptHeader;
+
+    const needsJson = !accept?.includes('application/json');
+    const needsSse = !accept?.includes('text/event-stream');
+
+    if (needsJson || needsSse || !accept) {
+      request.raw.headers['accept'] = 'application/json, text/event-stream';
+    }
+  }
+
+  /**
+   * Content-Type: application/json が無い場合に補完 (POST時の 415 回避)
+   */
+  private ensureContentTypeHeader(request: FastifyRequest): void {
+    if (request.raw.method !== 'POST') {
+      return;
+    }
+
+    const contentType = request.raw.headers['content-type'];
+    if (!contentType) {
+      request.raw.headers['content-type'] = 'application/json';
+    }
+  }
+
+  /**
+   * Streamable HTTP用のサーバー/トランスポートをまとめて生成
+   */
+  private createStreamableContext(): {
+    server: McpServer;
+    transport: StreamableHTTPServerTransport;
+  } {
+    return {
+      server: this.createStreamableMcpServer(),
+      transport: this.createStreamableTransport()
+    };
+  }
+
+  /**
+   * Fastifyレスポンスをtransportに委譲し、クローズ時にクリーンアップ
+   */
+  private hijackReply(
+    reply: FastifyReply,
+    server: McpServer,
+    transport: StreamableHTTPServerTransport
+  ): void {
+    reply.hijack();
+    reply.raw.on('close', () => {
+      void this.closeStreamableContext(server, transport);
+    });
+  }
+
+  /**
+   * Streamable HTTP の実行本体
+   */
+  private async runStreamableHandling(
+    request: FastifyRequest,
+    reply: FastifyReply,
+    server: McpServer,
+    transport: StreamableHTTPServerTransport
+  ): Promise<void> {
+    try {
+      await server.connect(transport);
+      await transport.handleRequest(request.raw, reply.raw, request.body);
+    } catch (error) {
+      this.logger.error(
+        `Streamable HTTP handling error: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined
+      );
+
+      if (!reply.raw.writableEnded) {
+        reply.raw.writeHead(500, { 'Content-Type': 'application/json' });
+        reply.raw.end(JSON.stringify({
+          jsonrpc: '2.0',
+          error: { code: -32603, message: 'Internal error' },
+          id: null
+        }));
+      }
+
+      await this.closeStreamableContext(server, transport);
+    }
+  }
+
+  /**
+   * Streamable HTTP コンテキストの終了処理
+   */
+  private async closeStreamableContext(
+    server: McpServer,
+    transport: StreamableHTTPServerTransport
+  ): Promise<void> {
+    try {
+      await server.close();
+    } catch (error) {
+      this.logger.error(
+        `MCP server close error: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined
+      );
+    }
+    try {
+      await transport.close();
+    } catch (error) {
+      this.logger.error(
+        `MCP transport close error: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined
+      );
+    }
+  }
+
+  /**
+   * streamable HTTP 用ツールの Zod スキーマをまとめて取得
+   */
+  private getStreamableSchemas(): {
+    localSearch: z.ZodObject<{
+      query: z.ZodOptional<z.ZodString>;
+      lat: z.ZodOptional<z.ZodNumber>;
+      lng: z.ZodOptional<z.ZodNumber>;
+      sessionId: z.ZodOptional<z.ZodString>;
+      offset: z.ZodOptional<z.ZodNumber>;
+      reset: z.ZodOptional<z.ZodBoolean>;
+      results: z.ZodOptional<z.ZodNumber>;
+    }>;
+    geocode: z.ZodObject<{ query: z.ZodString }>;
+    reverseGeocode: z.ZodObject<{ lat: z.ZodNumber; lng: z.ZodNumber }>;
+  } {
+    return {
+      localSearch: z.object({
+        query: z.string().optional(),
+        lat: z.number().optional(),
+        lng: z.number().optional(),
+        sessionId: z.string().optional(),
+        offset: z.number().optional(),
+        reset: z.boolean().optional(),
+        results: z.number().optional()
+      }),
+      geocode: z.object({
+        query: z.string()
+      }),
+      reverseGeocode: z.object({
+        lat: z.number(),
+        lng: z.number()
+      })
+    };
+  }
+
+  /**
+   * streamable HTTP 用にツールを登録
+   */
+  private registerStreamableTools(
+    server: McpServer,
+    schemas: ReturnType<McpService['getStreamableSchemas']>
+  ): void {
+    this.registerStreamableTool(
+      server,
+      'localSearch',
+      'Yahoo!ローカルサーチAPI - キーワードまたは座標でローカル検索（10件ページング対応）',
+      schemas.localSearch,
+      async (input, yahooAppId) => await this.localSearchService.execute(input, yahooAppId)
+    );
+
+    this.registerStreamableTool(
+      server,
+      'geocode',
+      'Yahoo!ジオコーダAPI - 住所文字列から座標を取得',
+      schemas.geocode,
+      async (input, yahooAppId) => await this.geocodeService.execute(input, yahooAppId)
+    );
+
+    this.registerStreamableTool(
+      server,
+      'reverseGeocode',
+      'Yahoo!リバースジオコーダAPI - 座標から住所を取得',
+      schemas.reverseGeocode,
+      async (input, yahooAppId) => await this.reverseGeocodeService.execute(input, yahooAppId)
+    );
+  }
+
+  /**
+   * 個別ツール登録ヘルパー
+   */
+  private registerStreamableTool<
+    TInputSchema extends z.ZodType<object>,
+    TInput = z.infer<TInputSchema>
+  >(
+    server: McpServer,
+    name: string,
+    description: string,
+    inputSchema: TInputSchema,
+    executor: (input: TInput, yahooAppId: string) => Promise<unknown>
+  ): void {
+    const callback = (async (
+      args: z.infer<TInputSchema>,
+      extra: RequestHandlerExtra<ServerRequest, ServerNotification>
+    ): Promise<CallToolResult> => await this.executeStreamableTool(
+      args as TInput,
+      extra,
+      executor
+    )) as ToolCallback<TInputSchema>;
+
+    server.registerTool(
+      name,
+      { description, inputSchema },
+      callback
+    );
+  }
+
+  /**
+   * Streamable HTTP用のMCPサーバーを生成し、既存ツールを登録
+   * @returns MCPサーバーインスタンス
+   */
+  private createStreamableMcpServer(): McpServer {
+    const server = new McpServer({
+      name: 'yahoo-developer-mcp',
+      version: '0.1.0'
+    });
+
+    const schemas = this.getStreamableSchemas();
+    this.registerStreamableTools(server, schemas);
+    return server;
+  }
+
+  /**
+   * Streamable HTTP用のtransportを生成
+   * @returns transportインスタンス
+   */
+  private createStreamableTransport(): StreamableHTTPServerTransport {
+    const transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: undefined, // stateless
+      enableJsonResponse: true
+    });
+
+    transport.onerror = (error: Error): void => {
+      this.logger.error(
+        `Streamable transport error: ${error.message}`,
+        error.stack
+      );
+    };
+
+    return transport;
+  }
+
+  /**
+   * ツール実行の共通処理 (Streamable HTTP向け)
+   * @param input ツール入力
+   * @param extra リクエスト付加情報
+   * @param executor 実際のツール実行関数
+   * @returns MCPツール実行結果
+   */
+  private async executeStreamableTool<TInput>(
+    input: TInput,
+    extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
+    executor: (toolInput: TInput, yahooAppId: string) => Promise<unknown>
+  ): Promise<CallToolResult> {
+    try {
+      const yahooAppId = this.extractYahooApiKeyFromExtra(extra);
+      const result = await executor(input, yahooAppId);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2)
+          }
+        ],
+        structuredContent: this.toStructuredContent(result)
+      };
+    } catch (error) {
+      this.logger.error(
+        `Streamable tool execution error: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined
+      );
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Error: ${error instanceof Error ? error.message : String(error)}`
+          }
+        ],
+        isError: true
+      };
+    }
+  }
+
+  /**
+   * structuredContentに安全にセットできる形へ正規化
+   * @param result ツール結果
+   * @returns Record形式の結果
+   */
+  private toStructuredContent(result: unknown): Record<string, unknown> | undefined {
+    if (result !== null && typeof result === 'object' && !Array.isArray(result)) {
+      return result as Record<string, unknown>;
+    }
+    return undefined;
+  }
+
+  /**
+   * AuthorizationヘッダーをRequestHandlerExtraから抽出
+   * @param extra リクエスト付加情報
+   * @returns 抽出したYahoo API Key
+   */
+  private extractYahooApiKeyFromExtra(
+    extra: RequestHandlerExtra<ServerRequest, ServerNotification>
+  ): string {
+    const authHeader = this.getAuthorizationHeader(extra);
+    return this.configService.extractYahooApiKey(authHeader);
+  }
+
+  /**
+   * requestInfoからAuthorizationヘッダーを取り出し、文字列に正規化
+   * @param extra リクエスト付加情報
+   * @returns Authorizationヘッダー文字列
+   */
+  private getAuthorizationHeader(
+    extra: RequestHandlerExtra<ServerRequest, ServerNotification>
+  ): string | undefined {
+    const headers = extra.requestInfo?.headers;
+    const auth = headers?.authorization ?? headers?.Authorization;
+
+    if (Array.isArray(auth)) {
+      return auth[0];
+    }
+
+    return auth;
   }
 }
 

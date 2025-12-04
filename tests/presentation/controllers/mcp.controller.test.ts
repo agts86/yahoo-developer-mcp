@@ -13,6 +13,7 @@ describe('McpController', () => {
     executeToolByName: jest.Mock<Promise<any>, [string, any, string]>;
     formatToolResponse: jest.Mock<any, [any]>;
     formatToolError: jest.Mock<any, [any]>;
+    handleStreamableHttpRequest: jest.Mock<Promise<void>, [any, any]>;
   };
 
   const mockMcpService: McpServiceMock = {
@@ -22,7 +23,8 @@ describe('McpController', () => {
     getHttpToolsDefinition: jest.fn(),
     executeToolByName: jest.fn(),
     formatToolResponse: jest.fn(),
-    formatToolError: jest.fn()
+    formatToolError: jest.fn(),
+    handleStreamableHttpRequest: jest.fn()
   };
 
   const mockConfigService: jest.Mocked<Pick<AppConfigProvider, 'extractYahooApiKey'>> = {
@@ -136,5 +138,16 @@ describe('McpController', () => {
     expect(mockMcpService.executeToolByName).toHaveBeenCalledWith(toolName, input, yahooAppId);
     expect(mockMcpService.formatToolError).toHaveBeenCalledWith(error);
     expect(result).toBe(formattedError);
+  });
+
+  test('should delegate streamable endpoint handling to service', async () => {
+    const request = { raw: {} } as any;
+    const reply = { raw: {} } as any;
+
+    mockMcpService.handleStreamableHttpRequest.mockResolvedValue(undefined);
+
+    await controller.handleStreamable(request, reply);
+
+    expect(mockMcpService.handleStreamableHttpRequest).toHaveBeenCalledWith(request, reply);
   });
 });

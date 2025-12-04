@@ -7,7 +7,10 @@ import {
   UseGuards, 
   UseInterceptors,
   Get,
-  Logger
+  Logger,
+  All,
+  Req,
+  Res,
 } from '@nestjs/common';
 import { YahooApiKeyGuard } from '../../guards/yahoo-api-key.guard.js';
 import { AppConfigProvider } from '../../../infrastructure/config/app-config.provider.js';
@@ -16,6 +19,7 @@ import { SSEInterceptor } from '../../interceptors/sse.interceptor.js';
 import type { McpMessage } from '../../../domain/mcp/mcp-message.interface.js';
 import type { McpToolDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
 import type { ToolResponse, ToolErrorResponse, McpServerInfo } from '../../../domain/mcp/tool-response.interface.js';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 
 /**
  * MCP ToolのHTTP APIコントローラー
@@ -34,6 +38,19 @@ export class McpController {
     private readonly mcpService: McpService,
     private readonly configService: AppConfigProvider,
   ) {}
+
+  /**
+   * Streamable HTTP エンドポイント (GET/POST/DELETE 全対応)
+   * Codex が期待する双方向ストリームAPIを提供
+   */
+  @All('stream')
+  async handleStreamable(
+    @Req() request: FastifyRequest,
+    @Res({ passthrough: false }) reply: FastifyReply
+  ): Promise<void> {
+    this.logger.debug('Streamable MCP endpoint accessed');
+    await this.mcpService.handleStreamableHttpRequest(request, reply);
+  }
 
   /**
    * MCPプロトコルのベースエンドポイント

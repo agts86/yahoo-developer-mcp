@@ -33,8 +33,9 @@ async function bootstrap(): Promise<void> {
   }
 
   const port = process.env.PORT || 3000;
-  await app.listen(port, '0.0.0.0');
-  logger.log(`Yahoo Developer MCP Server running on http://localhost:${port}`);
+  const host = process.env.HOST || '::'; // IPv4/IPv6両対応のためデフォルトは"::"
+  await app.listen(port, host);
+  logger.log(`Yahoo Developer MCP Server running on http://${host === '::' ? 'localhost' : host}:${port}`);
   if (isDevelopment) {
     logger.log(`Swagger UI available at http://localhost:${port}/swagger`);
   }
