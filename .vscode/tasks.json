@@ -20,6 +20,40 @@
       }
     },
     {
+      "label": "pnpm: build:watch",
+      "type": "shell",
+      "command": "pnpm run build:watch",
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": "$tsc-watch",
+      "isBackground": true,
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "pnpm: start:dev",
+      "type": "shell",
+      "command": "pnpm run start:dev",
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "isBackground": true,
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
       "label": "pnpm: test",
       "type": "shell",
       "command": "pnpm run test",

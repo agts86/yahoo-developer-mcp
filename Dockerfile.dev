@@ -23,5 +23,5 @@ COPY . .
 EXPOSE 3000
 EXPOSE 9229
 
-# 開発用の起動コマンド（ホットリロード対応）
-CMD ["sh", "-c", "if [ -f .env ]; then MCP_MODE=http node --inspect=0.0.0.0:9229 --watch --env-file=.env --loader ts-node/esm src/main.ts; else MCP_MODE=http node --inspect=0.0.0.0:9229 --watch --loader ts-node/esm src/main.ts; fi"]
+# 開発用の起動コマンド（NestJS ウォッチモード対応）
+CMD ["sh", "-c", "if [ -f .env ]; then MCP_MODE=http pnpm run start:debug; else MCP_MODE=http pnpm run start:debug; fi"]

@@ -6,7 +6,7 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/dist/main.js",
-      "runtimeArgs": ["--env-file=.env"],
+      "runtimeArgs": [],
       "env": {
         "MCP_MODE": "http",
         "PORT": "3000",
@@ -15,6 +15,34 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "preLaunchTask": "pnpm: build",
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
+      "serverReadyAction": {
+        "pattern": "Yahoo Developer MCP Server running on http://localhost:(\\d+)",
+        "uriFormat": "http://localhost:%s/swagger",
+        "action": "openExternally"
+      },
+      "sourceMaps": true,
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "name": "Launch MCP Server (Watch Mode)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["run", "start:debug"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "MCP_MODE": "http",
+        "PORT": "3000",
+        "NODE_ENV": "development"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "restart": true,
       "outFiles": [
         "${workspaceFolder}/dist/**/*.js"
       ],
@@ -60,7 +88,7 @@
       },
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "preLaunchTask": "npm: build",
+      "preLaunchTask": "pnpm: build",
       "skipFiles": [
         "<node_internals>/**"
       ]
