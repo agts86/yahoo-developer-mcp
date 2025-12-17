@@ -56,19 +56,34 @@ docker compose exec app pnpm test
    ```
 
 2. MCP クライアントで以下を設定:
+
+   **GitHub Copilot (VS Code) の場合:**
+   
+   `mcp.json` (Windows: `%APPDATA%\Code\User\mcp.json`, macOS/Linux: `~/.config/Code/User/mcp.json`) に以下を追加:
    ```json
    {
-     "mcpServers": {
-        "yahoo-developer": {
+     "servers": {
+        "yahoo-developer-local": {
           "type": "http",
-          "url": "http://localhost:3000/mcp",
+          "url": "http://localhost:3000/mcp/stream",
           "tools": ["*"],
+          "enabled": true,
           "headers": {
-            "Authorization": "Bearer {取得済みトークン｝"
+            "Authorization": "Bearer {取得済みトークン}"
           }
         }
       }
    }
+   ```
+
+   **codex (VS Code) の場合:**
+   
+   `config.toml` (macOS/Linux: `~/.codex/config.toml`) に以下を追加:
+   ```toml
+    [mcp_servers.yahoo-developer]
+    url = "http://localhost:3000/mcp/stream"
+    enabled = true
+    http_headers = { "Authorization" = "Bearer {取得済みトークン}" }
    ```
 
 3. MCP クライアントを再起動して MCP ツールを使用開始
