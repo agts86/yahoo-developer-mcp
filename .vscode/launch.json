@@ -8,7 +8,6 @@
       "program": "${workspaceFolder}/dist/main.js",
       "runtimeArgs": [],
       "env": {
-        "MCP_MODE": "http",
         "PORT": "3000",
         "NODE_ENV": "development"
       },
