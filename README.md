@@ -46,7 +46,6 @@ docker compose exec app pnpm test
 
 - `./docker-compose.yml` は `Dockerfile.dev` を利用します。初回ビルド時にコンテナ内へ `pnpm install` 済み。
 - リポジトリ全体を `/app` にバインドし、`node --watch` でソース変更時にサーバーを再起動します。
-- `.env` を置いておくと `--env-file` で読み込まれ、`MCP_MODE=http` がデフォルト設定されます。
 
 ## MCP クライアントでの使用
 
