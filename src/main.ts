@@ -15,11 +15,11 @@ async function bootstrap(): Promise<void> {
   // HTTPモード: NestJS Fastifyサーバーを起動
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter({ logger: true })
+    new FastifyAdapter({ logger: true }),
   );
 
   const isDevelopment = process.env.NODE_ENV === 'development';
-  
+
   // CORS設定 - VS CodeのMCP拡張からのアクセスを許可
   app.enableCors({
     origin: true, // すべてのオリジンを許可（開発環境用）
@@ -35,7 +35,9 @@ async function bootstrap(): Promise<void> {
   const port = process.env.PORT || 3000;
   const host = process.env.HOST || '::'; // IPv4/IPv6両対応のためデフォルトは"::"
   await app.listen(port, host);
-  logger.log(`Yahoo Developer MCP Server running on http://${host === '::' ? 'localhost' : host}:${port}`);
+  logger.log(
+    `Yahoo Developer MCP Server running on http://${host === '::' ? 'localhost' : host}:${port}`,
+  );
   if (isDevelopment) {
     logger.log(`Swagger UI available at http://localhost:${port}/swagger`);
   }

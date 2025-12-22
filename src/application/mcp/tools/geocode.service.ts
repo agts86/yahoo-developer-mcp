@@ -1,8 +1,14 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { MCP_REPOSITORY } from '../../../domain/mcp/imcp.repository.js';
 import type { IMcpRepository } from '../../../domain/mcp/imcp.repository.js';
-import { GeocodeParams, GeocodeResult } from '../../../domain/yahoo/yahoo.types.js';
-import { McpToolDefinition, McpToolWithDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
+import {
+  GeocodeParams,
+  GeocodeResult,
+} from '../../../domain/yahoo/yahoo.types.js';
+import {
+  McpToolDefinition,
+  McpToolWithDefinition,
+} from '../../../domain/mcp/tools/tool-definition.interface.js';
 import { GeocodeQuery } from '../../../domain/mcp/queries/yahooQueries.js';
 
 /**
@@ -10,7 +16,10 @@ import { GeocodeQuery } from '../../../domain/mcp/queries/yahooQueries.js';
  * 住所文字列から座標を取得します
  */
 @Injectable()
-export class GeocodeService implements McpToolWithDefinition<GeocodeParams, GeocodeResult> {
+export class GeocodeService implements McpToolWithDefinition<
+  GeocodeParams,
+  GeocodeResult
+> {
   readonly name = 'geocode';
   private readonly logger = new Logger(GeocodeService.name);
 
@@ -20,7 +29,7 @@ export class GeocodeService implements McpToolWithDefinition<GeocodeParams, Geoc
    */
   constructor(
     @Inject(MCP_REPOSITORY)
-    private readonly yahooRepository: IMcpRepository
+    private readonly yahooRepository: IMcpRepository,
   ) {}
 
   /**
@@ -29,25 +38,32 @@ export class GeocodeService implements McpToolWithDefinition<GeocodeParams, Geoc
    * @param yahooAppId Yahoo API Key
    * @returns ジオコーディングの結果
    */
-  async execute(input: GeocodeParams, yahooAppId: string): Promise<GeocodeResult> {
+  async execute(
+    input: GeocodeParams,
+    yahooAppId: string,
+  ): Promise<GeocodeResult> {
     this.logger.debug(`Geocode Tool Input: ${JSON.stringify(input)}`);
-    
+
     if (!input.query) throw new Error('geocode requires query');
 
     const query: GeocodeQuery = {
       appid: yahooAppId,
       output: 'json',
-      query: input.query
+      query: input.query,
     };
 
     try {
       const result = await this.yahooRepository.geocode(query);
-      
-      this.logger.debug(`Geocode Tool Output: Found ${result.items?.length || 0} items`);
+
+      this.logger.debug(
+        `Geocode Tool Output: Found ${result.items?.length || 0} items`,
+      );
       return result;
-      
     } catch (error) {
-      this.logger.error(`Geocode Tool Error: ${error instanceof Error ? error.message : String(error)}`, error);
+      this.logger.error(
+        `Geocode Tool Error: ${error instanceof Error ? error.message : String(error)}`,
+        error,
+      );
       throw error;
     }
   }
@@ -63,10 +79,10 @@ export class GeocodeService implements McpToolWithDefinition<GeocodeParams, Geoc
       inputSchema: {
         type: 'object',
         properties: {
-          query: { type: 'string', description: '住所文字列' }
+          query: { type: 'string', description: '住所文字列' },
         },
-        required: ['query']
-      }
+        required: ['query'],
+      },
     };
   }
 }

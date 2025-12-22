@@ -5,21 +5,32 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { z } from 'zod';
 import type { ToolCallback } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
-import type { ServerNotification, ServerRequest, CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import type {
+  ServerNotification,
+  ServerRequest,
+  CallToolResult,
+} from '@modelcontextprotocol/sdk/types.js';
 import { LocalSearchService } from './tools/local-search.service.js';
 import { GeocodeService } from './tools/geocode.service.js';
 import { ReverseGeocodeService } from './tools/reverse-geocode.service.js';
 import { AppConfigProvider } from '../../infrastructure/config/app-config.provider.js';
-import { McpToolDefinition, McpToolWithDefinition } from '../../domain/mcp/tools/tool-definition.interface.js';
+import {
+  McpToolDefinition,
+  McpToolWithDefinition,
+} from '../../domain/mcp/tools/tool-definition.interface.js';
 import { McpMethodHandler } from '../../domain/mcp/method-handler.interface.js';
 import { McpMessage } from '../../domain/mcp/mcp-message.interface.js';
-import { ToolResponse, ToolErrorResponse, McpServerInfo } from '../../domain/mcp/tool-response.interface.js';
-import { 
-  InitializeHandler, 
-  NotificationsInitializedHandler, 
+import {
+  ToolResponse,
+  ToolErrorResponse,
+  McpServerInfo,
+} from '../../domain/mcp/tool-response.interface.js';
+import {
+  InitializeHandler,
+  NotificationsInitializedHandler,
   LoggingSetLevelHandler,
   ToolsListHandler,
-  ToolsCallHandler 
+  ToolsCallHandler,
 } from './handlers/method-handlers.js';
 
 /**
@@ -58,7 +69,7 @@ export class McpService {
       new NotificationsInitializedHandler(),
       new LoggingSetLevelHandler(),
       new ToolsListHandler(this.tools),
-      new ToolsCallHandler(this.tools, this.configService)
+      new ToolsCallHandler(this.tools, this.configService),
     ];
   }
 
@@ -70,7 +81,10 @@ export class McpService {
    * @param authHeader - 認証ヘッダー（オプション）
    * @returns 処理結果
    */
-  async handleHttpMcpMessage(message: McpMessage, authHeader?: string): Promise<unknown> {
+  async handleHttpMcpMessage(
+    message: McpMessage,
+    authHeader?: string,
+  ): Promise<unknown> {
     this.logger.debug(`Processing HTTP MCP message: ${message.method}`);
     return await this.dispatchHttpMcpMethod(message, authHeader);
   }
@@ -82,19 +96,20 @@ export class McpService {
    * @returns メソッド実行結果
    * @throws メソッドが見つからない場合にエラーをスロー
    */
-  private async dispatchHttpMcpMethod(message: McpMessage, authHeader?: string): Promise<unknown> {
+  private async dispatchHttpMcpMethod(
+    message: McpMessage,
+    authHeader?: string,
+  ): Promise<unknown> {
     const method = message.method;
-    const handler = this.methodHandlers.find(h => h.method === method);
-    
+    const handler = this.methodHandlers.find((h) => h.method === method);
+
     if (!handler) {
       const error = this.createMethodNotFoundError(message.id, method);
       throw error;
     }
-    
+
     return await handler.handle(message, authHeader);
   }
-
-
 
   /**
    * ツール名によるツール実行（HTTP用）
@@ -104,8 +119,12 @@ export class McpService {
    * @returns ツール実行結果
    * @throws ツールが見つからない場合にエラーをスロー
    */
-  async executeToolByName(toolName: string, input: Record<string, unknown>, yahooAppId: string): Promise<unknown> {
-    const tool = this.tools.find(t => t.name === toolName);
+  async executeToolByName(
+    toolName: string,
+    input: Record<string, unknown>,
+    yahooAppId: string,
+  ): Promise<unknown> {
+    const tool = this.tools.find((t) => t.name === toolName);
     if (!tool) {
       const error = new Error(`Unknown tool: ${toolName}`);
       error.name = 'UnknownToolError';
@@ -119,7 +138,7 @@ export class McpService {
    * @returns ツール定義の配列
    */
   getHttpToolsDefinition(): McpToolDefinition[] {
-    return this.tools.map(tool => tool.getDefinition());
+    return this.tools.map((tool) => tool.getDefinition());
   }
 
   /**
@@ -128,7 +147,10 @@ export class McpService {
    * @param method - 未対応のメソッド名
    * @throws メソッド未対応エラーをスロー
    */
-  private createMethodNotFoundError(messageId: string | undefined, method: string): McpRpcError {
+  private createMethodNotFoundError(
+    messageId: string | undefined,
+    method: string,
+  ): McpRpcError {
     const error = new Error(`Method not found: ${method}`) as McpRpcError;
     error.name = 'MethodNotFoundError';
     error.code = -32601;
@@ -156,9 +178,9 @@ export class McpService {
       content: [
         {
           type: 'text',
-          text: JSON.stringify(result, null, 2)
-        }
-      ]
+          text: JSON.stringify(result, null, 2),
+        },
+      ],
     };
   }
 
@@ -168,16 +190,19 @@ export class McpService {
    * @returns フォーマットされたエラーレスポンス
    */
   formatToolError(error: unknown): ToolErrorResponse {
-    this.logger.error(`Tool execution error: ${error instanceof Error ? error.message : String(error)}`, error instanceof Error ? error.stack : undefined);
-    
+    this.logger.error(
+      `Tool execution error: ${error instanceof Error ? error.message : String(error)}`,
+      error instanceof Error ? error.stack : undefined,
+    );
+
     return {
       content: [
         {
           type: 'text',
-          text: `Error: ${error instanceof Error ? error.message : String(error)}`
-        }
+          text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+        },
       ],
-      isError: true
+      isError: true,
     };
   }
 
@@ -188,34 +213,43 @@ export class McpService {
    * @throws 適切なHTTPExceptionをスロー
    */
   handleHttpMcpError(error: unknown, messageId?: string): never {
-    this.logger.error(`HTTP MCP Message handling error: ${error instanceof Error ? error.message : String(error)}`, error instanceof Error ? error.stack : undefined);
-    
+    this.logger.error(
+      `HTTP MCP Message handling error: ${error instanceof Error ? error.message : String(error)}`,
+      error instanceof Error ? error.stack : undefined,
+    );
+
     const rpcError = this.toRpcError(error);
 
     if (rpcError?.name === 'MethodNotFoundError') {
-      throw new HttpException({
-        jsonrpc: '2.0',
-        id: rpcError.id || messageId,
-        error: {
-          code: -32601,
-          message: rpcError.message
-        }
-      }, HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        {
+          jsonrpc: '2.0',
+          id: rpcError.id || messageId,
+          error: {
+            code: -32601,
+            message: rpcError.message,
+          },
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     if (rpcError?.name === 'UnknownToolError') {
       throw new HttpException(rpcError.message, HttpStatus.BAD_REQUEST);
     }
-    
-    throw new HttpException({
-      jsonrpc: '2.0',
-      id: messageId,
-      error: {
-        code: -32603,
-        message: 'Internal error',
-        data: rpcError?.message ?? String(error)
-      }
-    }, HttpStatus.INTERNAL_SERVER_ERROR);
+
+    throw new HttpException(
+      {
+        jsonrpc: '2.0',
+        id: messageId,
+        error: {
+          code: -32603,
+          message: 'Internal error',
+          data: rpcError?.message ?? String(error),
+        },
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
 
   /**
@@ -224,7 +258,10 @@ export class McpService {
    * @param request - Fastifyリクエストオブジェクト
    * @returns レスポンスオブジェクト
    */
-  handleSSEConnection(reply: FastifyReply, request: FastifyRequest): FastifyReply {
+  handleSSEConnection(
+    reply: FastifyReply,
+    request: FastifyRequest,
+  ): FastifyReply {
     this.logger.debug('SSE connection requested');
 
     // Fastifyの自動レスポンス処理を停止し、手動でSSEレスポンスを制御
@@ -234,11 +271,11 @@ export class McpService {
     reply.raw.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Cache-Control'
+      'Access-Control-Allow-Headers': 'Cache-Control',
     });
-    
+
     // MCP初期化メッセージを送信
     const initMessage = {
       jsonrpc: '2.0',
@@ -246,29 +283,29 @@ export class McpService {
       params: {
         serverInfo: {
           name: 'yahoo-developer-mcp',
-          version: '0.1.0'
+          version: '0.1.0',
         },
         capabilities: {
           tools: {
-            listChanged: false
-          }
-        }
-      }
+            listChanged: false,
+          },
+        },
+      },
     };
-    
+
     reply.raw.write(`data: ${JSON.stringify(initMessage)}\n\n`);
-    
+
     // キープアライブハートビート
     const heartbeat = setInterval(() => {
       reply.raw.write(': heartbeat\n\n');
     }, 30000);
-    
+
     // クリーンアップ
     request.raw.on('close', () => {
       this.logger.debug('SSE connection closed');
       clearInterval(heartbeat);
     });
-    
+
     return reply;
   }
 
@@ -284,13 +321,13 @@ export class McpService {
       capabilities: {
         tools: true,
         resources: false,
-        prompts: false
+        prompts: false,
       },
       endpoints: {
         tools: '/mcp/tools',
         listTools: '/mcp/tools',
-        invokeTool: '/mcp/tools/{toolName}'
-      }
+        invokeTool: '/mcp/tools/{toolName}',
+      },
     };
   }
 
@@ -301,7 +338,7 @@ export class McpService {
    */
   async handleStreamableHttpRequest(
     request: FastifyRequest,
-    reply: FastifyReply
+    reply: FastifyReply,
   ): Promise<void> {
     this.ensureAcceptHeader(request);
     this.ensureContentTypeHeader(request);
@@ -315,7 +352,9 @@ export class McpService {
    */
   private ensureAcceptHeader(request: FastifyRequest): void {
     const acceptHeader = request.raw.headers['accept'];
-    const accept = Array.isArray(acceptHeader) ? acceptHeader.join(',') : acceptHeader;
+    const accept = Array.isArray(acceptHeader)
+      ? acceptHeader.join(',')
+      : acceptHeader;
 
     const needsJson = !accept?.includes('application/json');
     const needsSse = !accept?.includes('text/event-stream');
@@ -348,7 +387,7 @@ export class McpService {
   } {
     return {
       server: this.createStreamableMcpServer(),
-      transport: this.createStreamableTransport()
+      transport: this.createStreamableTransport(),
     };
   }
 
@@ -358,7 +397,7 @@ export class McpService {
   private hijackReply(
     reply: FastifyReply,
     server: McpServer,
-    transport: StreamableHTTPServerTransport
+    transport: StreamableHTTPServerTransport,
   ): void {
     reply.hijack();
     reply.raw.on('close', () => {
@@ -373,7 +412,7 @@ export class McpService {
     request: FastifyRequest,
     reply: FastifyReply,
     server: McpServer,
-    transport: StreamableHTTPServerTransport
+    transport: StreamableHTTPServerTransport,
   ): Promise<void> {
     try {
       await server.connect(transport);
@@ -381,16 +420,18 @@ export class McpService {
     } catch (error) {
       this.logger.error(
         `Streamable HTTP handling error: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined
+        error instanceof Error ? error.stack : undefined,
       );
 
       if (!reply.raw.writableEnded) {
         reply.raw.writeHead(500, { 'Content-Type': 'application/json' });
-        reply.raw.end(JSON.stringify({
-          jsonrpc: '2.0',
-          error: { code: -32603, message: 'Internal error' },
-          id: null
-        }));
+        reply.raw.end(
+          JSON.stringify({
+            jsonrpc: '2.0',
+            error: { code: -32603, message: 'Internal error' },
+            id: null,
+          }),
+        );
       }
 
       await this.closeStreamableContext(server, transport);
@@ -402,14 +443,14 @@ export class McpService {
    */
   private async closeStreamableContext(
     server: McpServer,
-    transport: StreamableHTTPServerTransport
+    transport: StreamableHTTPServerTransport,
   ): Promise<void> {
     try {
       await server.close();
     } catch (error) {
       this.logger.error(
         `MCP server close error: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined
+        error instanceof Error ? error.stack : undefined,
       );
     }
     try {
@@ -417,7 +458,7 @@ export class McpService {
     } catch (error) {
       this.logger.error(
         `MCP transport close error: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined
+        error instanceof Error ? error.stack : undefined,
       );
     }
   }
@@ -446,15 +487,15 @@ export class McpService {
         sessionId: z.string().optional(),
         offset: z.number().optional(),
         reset: z.boolean().optional(),
-        results: z.number().optional()
+        results: z.number().optional(),
       }),
       geocode: z.object({
-        query: z.string()
+        query: z.string(),
       }),
       reverseGeocode: z.object({
         lat: z.number(),
-        lng: z.number()
-      })
+        lng: z.number(),
+      }),
     };
   }
 
@@ -463,14 +504,15 @@ export class McpService {
    */
   private registerStreamableTools(
     server: McpServer,
-    schemas: ReturnType<McpService['getStreamableSchemas']>
+    schemas: ReturnType<McpService['getStreamableSchemas']>,
   ): void {
     this.registerStreamableTool(
       server,
       'localSearch',
       'Yahoo!ローカルサーチAPI - キーワードまたは座標でローカル検索（10件ページング対応）',
       schemas.localSearch,
-      async (input, yahooAppId) => await this.localSearchService.execute(input, yahooAppId)
+      async (input, yahooAppId) =>
+        await this.localSearchService.execute(input, yahooAppId),
     );
 
     this.registerStreamableTool(
@@ -478,7 +520,8 @@ export class McpService {
       'geocode',
       'Yahoo!ジオコーダAPI - 住所文字列から座標を取得',
       schemas.geocode,
-      async (input, yahooAppId) => await this.geocodeService.execute(input, yahooAppId)
+      async (input, yahooAppId) =>
+        await this.geocodeService.execute(input, yahooAppId),
     );
 
     this.registerStreamableTool(
@@ -486,7 +529,8 @@ export class McpService {
       'reverseGeocode',
       'Yahoo!リバースジオコーダAPI - 座標から住所を取得',
       schemas.reverseGeocode,
-      async (input, yahooAppId) => await this.reverseGeocodeService.execute(input, yahooAppId)
+      async (input, yahooAppId) =>
+        await this.reverseGeocodeService.execute(input, yahooAppId),
     );
   }
 
@@ -495,28 +539,25 @@ export class McpService {
    */
   private registerStreamableTool<
     TInputSchema extends z.ZodType<object>,
-    TInput = z.infer<TInputSchema>
+    TInput = z.infer<TInputSchema>,
   >(
     server: McpServer,
     name: string,
     description: string,
     inputSchema: TInputSchema,
-    executor: (input: TInput, yahooAppId: string) => Promise<unknown>
+    executor: (input: TInput, yahooAppId: string) => Promise<unknown>,
   ): void {
     const callback = (async (
       args: z.infer<TInputSchema>,
-      extra: RequestHandlerExtra<ServerRequest, ServerNotification>
-    ): Promise<CallToolResult> => await this.executeStreamableTool(
-      args as TInput,
-      extra,
-      executor
-    )) as ToolCallback<TInputSchema>;
+      extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
+    ): Promise<CallToolResult> =>
+      await this.executeStreamableTool(
+        args as TInput,
+        extra,
+        executor,
+      )) as ToolCallback<TInputSchema>;
 
-    server.registerTool(
-      name,
-      { description, inputSchema },
-      callback
-    );
+    server.registerTool(name, { description, inputSchema }, callback);
   }
 
   /**
@@ -526,7 +567,7 @@ export class McpService {
   private createStreamableMcpServer(): McpServer {
     const server = new McpServer({
       name: 'yahoo-developer-mcp',
-      version: '0.1.0'
+      version: '0.1.0',
     });
 
     const schemas = this.getStreamableSchemas();
@@ -541,13 +582,13 @@ export class McpService {
   private createStreamableTransport(): StreamableHTTPServerTransport {
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined, // stateless
-      enableJsonResponse: true
+      enableJsonResponse: true,
     });
 
     transport.onerror = (error: Error): void => {
       this.logger.error(
         `Streamable transport error: ${error.message}`,
-        error.stack
+        error.stack,
       );
     };
 
@@ -564,7 +605,7 @@ export class McpService {
   private async executeStreamableTool<TInput>(
     input: TInput,
     extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
-    executor: (toolInput: TInput, yahooAppId: string) => Promise<unknown>
+    executor: (toolInput: TInput, yahooAppId: string) => Promise<unknown>,
   ): Promise<CallToolResult> {
     try {
       const yahooAppId = this.extractYahooApiKeyFromExtra(extra);
@@ -574,25 +615,25 @@ export class McpService {
         content: [
           {
             type: 'text',
-            text: JSON.stringify(result, null, 2)
-          }
+            text: JSON.stringify(result, null, 2),
+          },
         ],
-        structuredContent: this.toStructuredContent(result)
+        structuredContent: this.toStructuredContent(result),
       };
     } catch (error) {
       this.logger.error(
         `Streamable tool execution error: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined
+        error instanceof Error ? error.stack : undefined,
       );
 
       return {
         content: [
           {
             type: 'text',
-            text: `Error: ${error instanceof Error ? error.message : String(error)}`
-          }
+            text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+          },
         ],
-        isError: true
+        isError: true,
       };
     }
   }
@@ -602,8 +643,14 @@ export class McpService {
    * @param result ツール結果
    * @returns Record形式の結果
    */
-  private toStructuredContent(result: unknown): Record<string, unknown> | undefined {
-    if (result !== null && typeof result === 'object' && !Array.isArray(result)) {
+  private toStructuredContent(
+    result: unknown,
+  ): Record<string, unknown> | undefined {
+    if (
+      result !== null &&
+      typeof result === 'object' &&
+      !Array.isArray(result)
+    ) {
       return result as Record<string, unknown>;
     }
     return undefined;
@@ -615,7 +662,7 @@ export class McpService {
    * @returns 抽出したYahoo API Key
    */
   private extractYahooApiKeyFromExtra(
-    extra: RequestHandlerExtra<ServerRequest, ServerNotification>
+    extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
   ): string {
     const authHeader = this.getAuthorizationHeader(extra);
     return this.configService.extractYahooApiKey(authHeader);
@@ -627,7 +674,7 @@ export class McpService {
    * @returns Authorizationヘッダー文字列
    */
   private getAuthorizationHeader(
-    extra: RequestHandlerExtra<ServerRequest, ServerNotification>
+    extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
   ): string | undefined {
     const headers = extra.requestInfo?.headers;
     const auth = headers?.authorization ?? headers?.Authorization;

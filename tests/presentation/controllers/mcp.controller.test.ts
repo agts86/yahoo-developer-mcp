@@ -24,18 +24,20 @@ describe('McpController', () => {
     executeToolByName: jest.fn(),
     formatToolResponse: jest.fn(),
     formatToolError: jest.fn(),
-    handleStreamableHttpRequest: jest.fn()
+    handleStreamableHttpRequest: jest.fn(),
   };
 
-  const mockConfigService: jest.Mocked<Pick<AppConfigProvider, 'extractYahooApiKey'>> = {
-    extractYahooApiKey: jest.fn()
+  const mockConfigService: jest.Mocked<
+    Pick<AppConfigProvider, 'extractYahooApiKey'>
+  > = {
+    extractYahooApiKey: jest.fn(),
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
     controller = new McpController(
       mockMcpService as unknown as McpService,
-      mockConfigService as unknown as AppConfigProvider
+      mockConfigService as unknown as AppConfigProvider,
     );
   });
 
@@ -47,13 +49,13 @@ describe('McpController', () => {
       capabilities: {
         tools: true,
         resources: false,
-        prompts: false
+        prompts: false,
       },
       endpoints: {
         tools: '/tools',
         listTools: '/tools',
-        invokeTool: '/tools/{toolName}'
-      }
+        invokeTool: '/tools/{toolName}',
+      },
     };
     mockMcpService.getMcpInfoResponse.mockReturnValue(infoResponse);
 
@@ -71,7 +73,10 @@ describe('McpController', () => {
 
     const result = await controller.handleMcpPost(body, authHeader);
 
-    expect(mockMcpService.handleHttpMcpMessage).toHaveBeenCalledWith(body, authHeader);
+    expect(mockMcpService.handleHttpMcpMessage).toHaveBeenCalledWith(
+      body,
+      authHeader,
+    );
     expect(mockMcpService.handleHttpMcpError).not.toHaveBeenCalled();
     expect(result).toBe(expectedResponse);
   });
@@ -85,8 +90,14 @@ describe('McpController', () => {
 
     const result = await controller.handleMcpPost(body, undefined);
 
-    expect(mockMcpService.handleHttpMcpMessage).toHaveBeenCalledWith(body, undefined);
-    expect(mockMcpService.handleHttpMcpError).toHaveBeenCalledWith(error, body.id);
+    expect(mockMcpService.handleHttpMcpMessage).toHaveBeenCalledWith(
+      body,
+      undefined,
+    );
+    expect(mockMcpService.handleHttpMcpError).toHaveBeenCalledWith(
+      error,
+      body.id,
+    );
     expect(result).toBe(handled);
   });
 
@@ -114,9 +125,17 @@ describe('McpController', () => {
 
     const result = await controller.invokeTool(toolName, input, authHeader);
 
-    expect(mockConfigService.extractYahooApiKey).toHaveBeenCalledWith(authHeader);
-    expect(mockMcpService.executeToolByName).toHaveBeenCalledWith(toolName, input, yahooAppId);
-    expect(mockMcpService.formatToolResponse).toHaveBeenCalledWith(executionResult);
+    expect(mockConfigService.extractYahooApiKey).toHaveBeenCalledWith(
+      authHeader,
+    );
+    expect(mockMcpService.executeToolByName).toHaveBeenCalledWith(
+      toolName,
+      input,
+      yahooAppId,
+    );
+    expect(mockMcpService.formatToolResponse).toHaveBeenCalledWith(
+      executionResult,
+    );
     expect(result).toBe(formatted);
   });
 
@@ -126,7 +145,10 @@ describe('McpController', () => {
     const authHeader = 'Bearer token';
     const yahooAppId = 'token';
     const error = new Error('failure');
-    const formattedError = { content: [{ type: 'text', text: 'Error' }], isError: true };
+    const formattedError = {
+      content: [{ type: 'text', text: 'Error' }],
+      isError: true,
+    };
 
     mockConfigService.extractYahooApiKey.mockReturnValue(yahooAppId);
     mockMcpService.executeToolByName.mockRejectedValue(error);
@@ -134,8 +156,14 @@ describe('McpController', () => {
 
     const result = await controller.invokeTool(toolName, input, authHeader);
 
-    expect(mockConfigService.extractYahooApiKey).toHaveBeenCalledWith(authHeader);
-    expect(mockMcpService.executeToolByName).toHaveBeenCalledWith(toolName, input, yahooAppId);
+    expect(mockConfigService.extractYahooApiKey).toHaveBeenCalledWith(
+      authHeader,
+    );
+    expect(mockMcpService.executeToolByName).toHaveBeenCalledWith(
+      toolName,
+      input,
+      yahooAppId,
+    );
     expect(mockMcpService.formatToolError).toHaveBeenCalledWith(error);
     expect(result).toBe(formattedError);
   });
@@ -148,6 +176,9 @@ describe('McpController', () => {
 
     await controller.handleStreamable(request, reply);
 
-    expect(mockMcpService.handleStreamableHttpRequest).toHaveBeenCalledWith(request, reply);
+    expect(mockMcpService.handleStreamableHttpRequest).toHaveBeenCalledWith(
+      request,
+      reply,
+    );
   });
 });

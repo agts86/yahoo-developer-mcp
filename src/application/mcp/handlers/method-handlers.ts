@@ -1,9 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { McpMethodHandler } from '../../../domain/mcp/method-handler.interface.js';
-import { McpToolDefinition, McpToolWithDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
+import {
+  McpToolDefinition,
+  McpToolWithDefinition,
+} from '../../../domain/mcp/tools/tool-definition.interface.js';
 import { AppConfigProvider } from '../../../infrastructure/config/app-config.provider.js';
-import { LoggingSetLevelParams, McpMessage, ToolsCallParams } from '../../../domain/mcp/mcp-message.interface.js';
-import { McpInitializeResponse, McpBaseResponse, McpToolResult } from '../../../domain/mcp/mcp-response.interface.js';
+import {
+  LoggingSetLevelParams,
+  McpMessage,
+  ToolsCallParams,
+} from '../../../domain/mcp/mcp-message.interface.js';
+import {
+  McpInitializeResponse,
+  McpBaseResponse,
+  McpToolResult,
+} from '../../../domain/mcp/mcp-response.interface.js';
 
 /**
  * MCP初期化ハンドラー
@@ -29,14 +40,14 @@ export class InitializeHandler implements McpMethodHandler {
         capabilities: {
           tools: { listChanged: false },
           logging: {
-            levels: ['error', 'warn', 'info', 'debug']
-          }
+            levels: ['error', 'warn', 'info', 'debug'],
+          },
         },
         serverInfo: {
           name: 'yahoo-developer-mcp',
-          version: '0.1.0'
-        }
-      }
+          version: '0.1.0',
+        },
+      },
     };
   }
 }
@@ -74,12 +85,14 @@ export class LoggingSetLevelHandler implements McpMethodHandler {
    * @param message - MCPメッセージ
    * @returns ログレベル設定レスポンス
    */
-  handle(message: McpMessage<LoggingSetLevelParams>): McpBaseResponse<Record<string, never>> {
+  handle(
+    message: McpMessage<LoggingSetLevelParams>,
+  ): McpBaseResponse<Record<string, never>> {
     this.logger.log(`Setting log level to: ${message.params?.level || 'info'}`);
     return {
       jsonrpc: '2.0',
       id: message.id,
-      result: {}
+      result: {},
     };
   }
 }
@@ -108,8 +121,8 @@ export class ToolsListHandler implements McpMethodHandler {
       jsonrpc: '2.0',
       id: message.id,
       result: {
-        tools: this.tools.map(tool => tool.getDefinition())
-      }
+        tools: this.tools.map((tool) => tool.getDefinition()),
+      },
     };
   }
 }
@@ -130,7 +143,7 @@ export class ToolsCallHandler implements McpMethodHandler {
    */
   constructor(
     private readonly tools: McpToolWithDefinition[],
-    private readonly configService: AppConfigProvider
+    private readonly configService: AppConfigProvider,
   ) {}
 
   /**
@@ -139,12 +152,15 @@ export class ToolsCallHandler implements McpMethodHandler {
    * @param authHeader - 認証ヘッダー（オプション）
    * @returns ツール実行結果レスポンス
    */
-  async handle(message: McpMessage<ToolsCallParams>, authHeader?: string): Promise<McpBaseResponse<McpToolResult>> {
+  async handle(
+    message: McpMessage<ToolsCallParams>,
+    authHeader?: string,
+  ): Promise<McpBaseResponse<McpToolResult>> {
     const yahooAppId = this.configService.extractYahooApiKey(authHeader);
     const { name, arguments: args } = message.params ?? {};
 
     try {
-      const tool = this.tools.find(t => t.name === name);
+      const tool = this.tools.find((t) => t.name === name);
       if (!tool) {
         const error = new Error(`Unknown tool: ${name}`);
         error.name = 'UnknownToolError';
@@ -159,13 +175,16 @@ export class ToolsCallHandler implements McpMethodHandler {
           content: [
             {
               type: 'text',
-              text: JSON.stringify(result, null, 2)
-            }
-          ]
-        }
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        },
       };
     } catch (error) {
-      this.logger.error(`Tool execution error: ${error instanceof Error ? error.message : String(error)}`, error);
+      this.logger.error(
+        `Tool execution error: ${error instanceof Error ? error.message : String(error)}`,
+        error,
+      );
       return {
         jsonrpc: '2.0',
         id: message.id,
@@ -173,11 +192,11 @@ export class ToolsCallHandler implements McpMethodHandler {
           content: [
             {
               type: 'text',
-              text: `Error: ${error instanceof Error ? error.message : String(error)}`
-            }
+              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
           ],
-          isError: true
-        }
+          isError: true,
+        },
       };
     }
   }

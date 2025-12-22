@@ -5,24 +5,28 @@
 ### ✅ やるべきこと
 
 **Domain層（src/domain/）**
+
 - ビジネスロジックに関する純粋なTypeScriptインターフェース・型定義のみ配置
 - 外部依存関係を一切持たない
 - インターフェース名は`I`プレフィックスを付ける（例：`IMcpRepository`）
 - ドメインエンティティの型定義は機能別にフォルダ分割（例：`mcp/`, `yahoo/`）
 
 **Application層（src/application/）**
+
 - ビジネスロジックの実装とオーケストレーション
 - Domainインターフェースに依存し、Infrastructureを注入で受け取る
 - `@Injectable()`デコレータを必須とする
 - 1クラス1責任の原則を守る
 
 **Infrastructure層（src/infrastructure/）**
+
 - 外部システム（HTTP、データベース、ファイルシステム）との実際の通信
 - Domainのインターフェースを実装する
 - 設定管理・HTTP クライアント等の技術的関心事を配置
 - **リポジトリパターン**: Domain層でインターフェースを定義し、Infrastructure層で`implements`により実装する
 
 **Presentation層（src/presentation/）**
+
 - HTTP エンドポイント・ガード・インターセプターなど
 - アプリケーション層のサービスを呼び出すのみ
 - リクエスト/レスポンスの変換ロジックのみ含む
@@ -45,7 +49,7 @@ export interface ToolResponse {
   content: Array<ToolContent>;
 }
 
-// Application層での拡張型定義例  
+// Application層での拡張型定義例
 // src/application/mcp/tools/local-search.service.ts
 export interface LocalSearchToolInput extends LocalSearchParams {}
 export interface LocalSearchToolOutput extends LocalSearchResult {}
@@ -76,7 +80,10 @@ export interface McpTool<Input = unknown, Output = unknown> {
 // ジェネリクスで型安全性を確保
 export interface McpMethodHandler<Params = unknown, Response = unknown> {
   readonly method: string;
-  handle(message: McpMessage<Params>, authHeader?: string): Promise<Response> | Response;
+  handle(
+    message: McpMessage<Params>,
+    authHeader?: string,
+  ): Promise<Response> | Response;
 }
 ```
 
@@ -98,8 +105,8 @@ export interface McpMethodHandler<Params = unknown, Response = unknown> {
 ```typescript
 // 明示的な戻り値型指定
 async executeToolByName(
-  toolName: string, 
-  input: Record<string, unknown>, 
+  toolName: string,
+  input: Record<string, unknown>,
   yahooAppId: string
 ): Promise<unknown> {
   // 実装
@@ -107,7 +114,7 @@ async executeToolByName(
 
 // void戻り値も明示
 private createMethodNotFoundError(
-  messageId: string | undefined, 
+  messageId: string | undefined,
   method: string
 ): never {
   // 実装
@@ -166,7 +173,7 @@ export interface IMcpRepository {
 @Injectable()
 export class McpRepository implements IMcpRepository {
   constructor(private readonly httpClient: HttpClient) {}
-  
+
   async geocode(query: GeocodeQuery): Promise<GeocodeResult> {
     // 外部API呼び出し実装
   }
@@ -177,7 +184,7 @@ export class McpRepository implements IMcpRepository {
 export class GeocodeService {
   constructor(
     @Inject(MCP_REPOSITORY)
-    private readonly mcpRepository: IMcpRepository
+    private readonly mcpRepository: IMcpRepository,
   ) {}
 }
 ```
@@ -209,11 +216,11 @@ private createMethodNotFoundError(messageId: string | undefined, method: string)
 
 // 統一エラーハンドリング
 handleHttpMcpError(error: unknown, messageId?: string): never {
-  this.logger.error(`HTTP MCP Message handling error: ${error}`, 
+  this.logger.error(`HTTP MCP Message handling error: ${error}`,
     error instanceof Error ? error.stack : undefined);
-  
+
   const rpcError = this.toRpcError(error);
-  
+
   if (rpcError?.name === 'MethodNotFoundError') {
     throw new HttpException(/* ... */, HttpStatus.BAD_REQUEST);
   }
@@ -285,12 +292,12 @@ async executeToolByName(toolName: string, params: unknown, yahooAppId: string): 
   if (!toolName) {
     throw new Error('Tool name is required');
   }
-  
+
   const tool = this.findToolByName(toolName);
   if (!tool) {
     throw new Error(`Unknown tool: ${toolName}`);
   }
-  
+
   return await tool.execute(params, yahooAppId);
 }
 
@@ -357,30 +364,35 @@ pnpm test:coverage  # テストカバレッジの確認
 ### ✅ 自動的に適用すべき設計原則
 
 **Switch文・長い条件分岐の自動リファクタリング:**
+
 - `switch`文や長い`if-else`チェーンを発見した場合、自動的にStrategy パターンまたはポリモーフィズムで置き換える
 - 複数の似たような処理がある場合、共通インターフェースを作成してコレクション + `find()` パターンを適用
 - 新しい分岐追加時の影響範囲を最小化する設計を優先
 
 **複雑度の自動監視と対処:**
+
 - メソッドの循環的複雑度が6を超えた時点で分割を検討
 - ネストが2階層を超えた場合、早期リターンパターンを適用
 - 1つのクラス/ファイルで複数の責任を持っている場合、自動的に分離を提案
 
 **パターン適用の優先順位:**
+
 1. **Strategy パターン**: 同種の処理で実装が異なる場合
-2. **Factory パターン**: 条件によってインスタンス生成が分岐する場合  
+2. **Factory パターン**: 条件によってインスタンス生成が分岐する場合
 3. **Collection + find**: 名前や条件での検索が必要な場合
 4. **Template Method**: 処理の流れは同じで一部だけ異なる場合
 
 ### 🤖 自動判断基準
 
 **即座にリファクタリング提案する条件:**
+
 - `switch (type/name)` パターンを発見
 - 同じような`if (name === 'xxx')` が3つ以上
 - メソッド内の`if`ネストが3階層以上
 - 1つのメソッドが50行を超える
 
 **設計時の自動考慮事項:**
+
 - 「将来この処理に似たものが増える可能性は？」→インターフェース化
 - 「この分岐は今後増える可能性は？」→Strategy パターン適用
 - 「このメソッドは複数の責任を持っていないか？」→分割検討
@@ -390,8 +402,10 @@ pnpm test:coverage  # テストカバレッジの確認
 ```typescript
 // ❌ 自動検出対象（複雑度高）
 switch (toolName) {
-  case 'geocode': /* 処理 */ break;
-  case 'reverse': /* 処理 */ break;
+  case 'geocode':
+    /* 処理 */ break;
+  case 'reverse':
+    /* 処理 */ break;
   // 3つ以上で自動提案
 }
 
@@ -401,7 +415,7 @@ interface Tool {
   execute(): Promise<Result>;
 }
 
-const tool = this.tools.find(t => t.name === toolName);
+const tool = this.tools.find((t) => t.name === toolName);
 if (!tool) throw new Error(`Unknown tool: ${toolName}`);
 return tool.execute();
 ```
@@ -424,6 +438,7 @@ return tool.execute();
 ### ✅ 必須の開発フロー
 
 **コード修正後の必須チェック**
+
 ```bash
 # 1. ESLintによるコード品質チェック（必須）
 pnpm lint
@@ -436,6 +451,7 @@ pnpm test
 ```
 
 **ESLint設定による自動品質管理**
+
 - 循環複雑度は10以下を維持
 - `any`型の使用を禁止
 - 明示的な関数戻り値型を必須
@@ -450,6 +466,7 @@ pnpm test
 - ESLintルールを無視する修正
 
 **AI向け特記事項（手順省略の禁止）**
+
 - **手順の省略**: 「面倒だから」「時間がかかるから」という理由でルールを無視する
 - **勝手な判断**: 「小さな修正だから大丈夫だろう」と自己判断して必須チェックを省略する
 - **楽をしようとする**: AIに疲労はないので、確実にすべての手順を実行する

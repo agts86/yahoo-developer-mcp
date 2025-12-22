@@ -91,9 +91,7 @@
     {
       "label": "Build and Start HTTP Server",
       "dependsOrder": "sequence",
-      "dependsOn": [
-        "pnpm: build"
-      ],
+      "dependsOn": ["pnpm: build"],
       "type": "shell",
       "command": "node --env-file=.env dist/main.js",
       "group": {

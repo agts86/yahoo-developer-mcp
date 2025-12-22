@@ -18,7 +18,10 @@ export interface McpToolDefinition {
  * MCPツールの拡張インターフェース
  * ツール定義情報を含むツールインターフェース
  */
-export interface McpToolWithDefinition<Input = unknown, Output = unknown> extends McpTool<Input, Output> {
+export interface McpToolWithDefinition<
+  Input = unknown,
+  Output = unknown,
+> extends McpTool<Input, Output> {
   /**
    * ツール定義を返します
    */

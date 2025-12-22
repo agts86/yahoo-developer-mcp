@@ -15,5 +15,8 @@ export interface McpMethodHandler<Params = unknown, Response = unknown> {
    * @param authHeader 認証ヘッダー（オプション）
    * @returns レスポンス
    */
-  handle(message: McpMessage<Params>, authHeader?: string): Promise<Response> | Response;
+  handle(
+    message: McpMessage<Params>,
+    authHeader?: string,
+  ): Promise<Response> | Response;
 }

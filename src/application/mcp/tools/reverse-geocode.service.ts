@@ -1,8 +1,14 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { MCP_REPOSITORY } from '../../../domain/mcp/imcp.repository.js';
 import type { IMcpRepository } from '../../../domain/mcp/imcp.repository.js';
-import { ReverseGeocodeParams, ReverseGeocodeResult } from '../../../domain/yahoo/yahoo.types.js';
-import { McpToolDefinition, McpToolWithDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
+import {
+  ReverseGeocodeParams,
+  ReverseGeocodeResult,
+} from '../../../domain/yahoo/yahoo.types.js';
+import {
+  McpToolDefinition,
+  McpToolWithDefinition,
+} from '../../../domain/mcp/tools/tool-definition.interface.js';
 import { ReverseGeocodeQuery } from '../../../domain/mcp/queries/yahooQueries.js';
 
 /**
@@ -10,7 +16,10 @@ import { ReverseGeocodeQuery } from '../../../domain/mcp/queries/yahooQueries.js
  * 座標から住所を取得します
  */
 @Injectable()
-export class ReverseGeocodeService implements McpToolWithDefinition<ReverseGeocodeParams, ReverseGeocodeResult> {
+export class ReverseGeocodeService implements McpToolWithDefinition<
+  ReverseGeocodeParams,
+  ReverseGeocodeResult
+> {
   readonly name = 'reverseGeocode';
   private readonly logger = new Logger(ReverseGeocodeService.name);
 
@@ -20,7 +29,7 @@ export class ReverseGeocodeService implements McpToolWithDefinition<ReverseGeoco
    */
   constructor(
     @Inject(MCP_REPOSITORY)
-    private readonly yahooRepository: IMcpRepository
+    private readonly yahooRepository: IMcpRepository,
   ) {}
 
   /**
@@ -29,9 +38,12 @@ export class ReverseGeocodeService implements McpToolWithDefinition<ReverseGeoco
    * @param yahooAppId Yahoo API Key
    * @returns リバースジオコーディングの結果
    */
-  async execute(input: ReverseGeocodeParams, yahooAppId: string): Promise<ReverseGeocodeResult> {
+  async execute(
+    input: ReverseGeocodeParams,
+    yahooAppId: string,
+  ): Promise<ReverseGeocodeResult> {
     this.logger.debug(`Reverse Geocode Tool Input: ${JSON.stringify(input)}`);
-    
+
     if (input.lat === undefined || input.lng === undefined) {
       throw new Error('reverseGeocode requires lat & lng');
     }
@@ -40,17 +52,21 @@ export class ReverseGeocodeService implements McpToolWithDefinition<ReverseGeoco
       appid: yahooAppId,
       output: 'json',
       lat: input.lat,
-      lon: input.lng
+      lon: input.lng,
     };
 
     try {
       const result = await this.yahooRepository.reverseGeocode(query);
-      
-      this.logger.debug(`Reverse Geocode Tool Output: Found ${result.items?.length || 0} items`);
+
+      this.logger.debug(
+        `Reverse Geocode Tool Output: Found ${result.items?.length || 0} items`,
+      );
       return result;
-      
     } catch (error) {
-      this.logger.error(`Reverse Geocode Tool Error: ${error instanceof Error ? error.message : String(error)}`, error);
+      this.logger.error(
+        `Reverse Geocode Tool Error: ${error instanceof Error ? error.message : String(error)}`,
+        error,
+      );
       throw error;
     }
   }
@@ -67,10 +83,10 @@ export class ReverseGeocodeService implements McpToolWithDefinition<ReverseGeoco
         type: 'object',
         properties: {
           lat: { type: 'number', description: '緯度' },
-          lng: { type: 'number', description: '経度' }
+          lng: { type: 'number', description: '経度' },
         },
-        required: ['lat', 'lng']
-      }
+        required: ['lat', 'lng'],
+      },
     };
   }
 }

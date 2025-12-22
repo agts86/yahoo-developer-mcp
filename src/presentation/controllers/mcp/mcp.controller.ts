@@ -1,10 +1,10 @@
-import { 
-  Controller, 
-  Post, 
-  Body, 
-  Param, 
-  Headers, 
-  UseGuards, 
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Headers,
+  UseGuards,
   UseInterceptors,
   Get,
   Logger,
@@ -18,7 +18,11 @@ import { McpService } from '../../../application/mcp/mcp.service.js';
 import { SSEInterceptor } from '../../interceptors/sse.interceptor.js';
 import type { McpMessage } from '../../../domain/mcp/mcp-message.interface.js';
 import type { McpToolDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
-import type { ToolResponse, ToolErrorResponse, McpServerInfo } from '../../../domain/mcp/tool-response.interface.js';
+import type {
+  ToolResponse,
+  ToolErrorResponse,
+  McpServerInfo,
+} from '../../../domain/mcp/tool-response.interface.js';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
 /**
@@ -46,7 +50,7 @@ export class McpController {
   @All('stream')
   async handleStreamable(
     @Req() request: FastifyRequest,
-    @Res({ passthrough: false }) reply: FastifyReply
+    @Res({ passthrough: false }) reply: FastifyReply,
   ): Promise<void> {
     this.logger.debug('Streamable MCP endpoint accessed');
     await this.mcpService.handleStreamableHttpRequest(request, reply);
@@ -75,7 +79,7 @@ export class McpController {
   @Post()
   async handleMcpPost(
     @Body() body: McpMessage,
-    @Headers('authorization') authHeader?: string
+    @Headers('authorization') authHeader?: string,
   ): Promise<unknown> {
     this.logger.debug(`MCP POST Message: ${JSON.stringify(body)}`);
 
@@ -86,17 +90,15 @@ export class McpController {
     }
   }
 
-
-
   /**
    * 利用可能なツール一覧を取得
    * @returns ツール一覧レスポンス
    */
   @Get('tools')
-  @UseGuards(YahooApiKeyGuard)  
+  @UseGuards(YahooApiKeyGuard)
   getTools(): { tools: McpToolDefinition[] } {
     return {
-      tools: this.mcpService.getHttpToolsDefinition()
+      tools: this.mcpService.getHttpToolsDefinition(),
     };
   }
 
@@ -111,17 +113,22 @@ export class McpController {
   async invokeTool(
     @Param('toolName') toolName: string,
     @Body() input: Record<string, unknown>,
-    @Headers('authorization') authHeader?: string
+    @Headers('authorization') authHeader?: string,
   ): Promise<ToolResponse | ToolErrorResponse> {
-    this.logger.debug(`Tool invocation: ${toolName} with input: ${JSON.stringify(input)}`);
+    this.logger.debug(
+      `Tool invocation: ${toolName} with input: ${JSON.stringify(input)}`,
+    );
 
     try {
       const yahooAppId = this.configService.extractYahooApiKey(authHeader);
-      const result = await this.mcpService.executeToolByName(toolName, input, yahooAppId);
+      const result = await this.mcpService.executeToolByName(
+        toolName,
+        input,
+        yahooAppId,
+      );
       return this.mcpService.formatToolResponse(result);
     } catch (error) {
       return this.mcpService.formatToolError(error);
     }
   }
-
 }

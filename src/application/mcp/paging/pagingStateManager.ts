@@ -28,7 +28,12 @@ function makeKey(k: PagingKey): string {
  * @param explicitOffset - 明示的なオフセット指定（オプション）
  * @returns 現在のオフセットと次のオフセット
  */
-export function getAndAdvance(k: PagingKey, pageSize: number, reset: boolean, explicitOffset?: number): { offset: number; nextOffset?: number } {
+export function getAndAdvance(
+  k: PagingKey,
+  pageSize: number,
+  reset: boolean,
+  explicitOffset?: number,
+): { offset: number; nextOffset?: number } {
   const key = makeKey(k);
   let state = store.get(key);
   const now = Date.now();

@@ -24,6 +24,7 @@ pnpm lint:check
 ## 主要なルール解説
 
 ### AGENTS.md規約対応
+
 - `explicit-function-return-type`: 全メソッドで戻り値型必須
 - `no-explicit-any`: any型の使用禁止
 - `complexity`: 循環的複雑度10以下
@@ -31,11 +32,13 @@ pnpm lint:check
 - `consistent-type-imports`: `import type`の強制使用
 
 ### 品質向上
+
 - `unused-imports/no-unused-imports`: 未使用インポート自動削除
 - `no-floating-promises`: Promise の適切な処理強制
 - `no-console`: console.log使用警告（Logger推奨）
 
 ### NestJS対応
+
 - `no-parameter-properties`: コンストラクタ注入パラメータ許可
 - `prefer-readonly`: readonly修飾子の推奨
 

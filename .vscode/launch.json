@@ -14,18 +14,14 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "preLaunchTask": "pnpm: build",
-      "outFiles": [
-        "${workspaceFolder}/dist/**/*.js"
-      ],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "serverReadyAction": {
         "pattern": "Yahoo Developer MCP Server running on http://localhost:(\\d+)",
         "uriFormat": "http://localhost:%s/swagger",
         "action": "openExternally"
       },
       "sourceMaps": true,
-      "skipFiles": [
-        "<node_internals>/**"
-      ]
+      "skipFiles": ["<node_internals>/**"]
     },
     {
       "name": "Launch MCP Server (Watch Mode)",
@@ -42,18 +38,14 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "restart": true,
-      "outFiles": [
-        "${workspaceFolder}/dist/**/*.js"
-      ],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "serverReadyAction": {
         "pattern": "Yahoo Developer MCP Server running on http://localhost:(\\d+)",
         "uriFormat": "http://localhost:%s/swagger",
         "action": "openExternally"
       },
       "sourceMaps": true,
-      "skipFiles": [
-        "<node_internals>/**"
-      ]
+      "skipFiles": ["<node_internals>/**"]
     },
     {
       "name": "Attach to MCP Server",
@@ -63,24 +55,16 @@
       "restart": true,
       "localRoot": "${workspaceFolder}",
       "remoteRoot": "${workspaceFolder}",
-      "outFiles": [
-        "${workspaceFolder}/dist/**/*.js"
-      ],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "sourceMaps": true,
-      "skipFiles": [
-        "<node_internals>/**"
-      ]
+      "skipFiles": ["<node_internals>/**"]
     },
     {
       "name": "Launch Tests",
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/node_modules/.bin/jest",
-      "args": [
-        "--runInBand",
-        "--detectOpenHandles",
-        "--forceExit"
-      ],
+      "args": ["--runInBand", "--detectOpenHandles", "--forceExit"],
       "env": {
         "NODE_ENV": "test",
         "YAHOO_APP_ID": "test_app_id"
@@ -88,9 +72,7 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "preLaunchTask": "pnpm: build",
-      "skipFiles": [
-        "<node_internals>/**"
-      ]
+      "skipFiles": ["<node_internals>/**"]
     }
   ]
 }

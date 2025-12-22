@@ -44,9 +44,8 @@ jobs:
       contents: read #This is required for actions/checkout
 
     needs: build
-    
+
     steps:
-      
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -61,4 +60,3 @@ jobs:
           app-name: 'yahoo-developer'
           slot-name: 'Production'
           images: 'ghcr.io/${{ github.repository_owner }}/yahoo-developer-mcp:${{ github.sha }}'
-          

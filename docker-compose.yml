@@ -5,8 +5,8 @@ services:
       dockerfile: Dockerfile.dev
     container_name: yahoo-mcp-dev
     ports:
-      - "3000:3000"
-      - "9229:9229"
+      - '3000:3000'
+      - '9229:9229'
     volumes:
       # ソースコード全体をバインドしてホットリロード
       - ./:/app
@@ -19,7 +19,7 @@ services:
     restart: unless-stopped
     # ログ設定
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'

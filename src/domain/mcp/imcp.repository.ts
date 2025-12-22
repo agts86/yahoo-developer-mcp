@@ -1,5 +1,13 @@
-import type { LocalSearchResult, GeocodeResult, ReverseGeocodeResult } from '../yahoo/yahoo.types.js';
-import type { LocalSearchQuery, GeocodeQuery, ReverseGeocodeQuery } from './queries/yahooQueries.js';
+import type {
+  LocalSearchResult,
+  GeocodeResult,
+  ReverseGeocodeResult,
+} from '../yahoo/yahoo.types.js';
+import type {
+  LocalSearchQuery,
+  GeocodeQuery,
+  ReverseGeocodeQuery,
+} from './queries/yahooQueries.js';
 
 /**
  * MCPユースケースで利用する外部データ取得のリポジトリ抽象

@@ -1,8 +1,14 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { MCP_REPOSITORY } from '../../../domain/mcp/imcp.repository.js';
 import type { IMcpRepository } from '../../../domain/mcp/imcp.repository.js';
-import { LocalSearchParams, LocalSearchResult } from '../../../domain/yahoo/yahoo.types.js';
-import { McpToolDefinition, McpToolWithDefinition } from '../../../domain/mcp/tools/tool-definition.interface.js';
+import {
+  LocalSearchParams,
+  LocalSearchResult,
+} from '../../../domain/yahoo/yahoo.types.js';
+import {
+  McpToolDefinition,
+  McpToolWithDefinition,
+} from '../../../domain/mcp/tools/tool-definition.interface.js';
 import { getAndAdvance } from '../paging/pagingStateManager.js';
 import { LocalSearchQuery } from '../../../domain/mcp/queries/yahooQueries.js';
 
@@ -11,7 +17,10 @@ import { LocalSearchQuery } from '../../../domain/mcp/queries/yahooQueries.js';
  * ページング機能付きのローカル検索を提供します
  */
 @Injectable()
-export class LocalSearchService implements McpToolWithDefinition<LocalSearchParams, LocalSearchResult> {
+export class LocalSearchService implements McpToolWithDefinition<
+  LocalSearchParams,
+  LocalSearchResult
+> {
   readonly name = 'localSearch';
   private readonly logger = new Logger(LocalSearchService.name);
 
@@ -21,7 +30,7 @@ export class LocalSearchService implements McpToolWithDefinition<LocalSearchPara
    */
   constructor(
     @Inject(MCP_REPOSITORY)
-    private readonly yahooRepository: IMcpRepository
+    private readonly yahooRepository: IMcpRepository,
   ) {}
 
   /**
@@ -30,7 +39,10 @@ export class LocalSearchService implements McpToolWithDefinition<LocalSearchPara
    * @param yahooAppId Yahoo API Key
    * @returns ローカルサーチの結果
    */
-  async execute(input: LocalSearchParams, yahooAppId: string): Promise<LocalSearchResult> {
+  async execute(
+    input: LocalSearchParams,
+    yahooAppId: string,
+  ): Promise<LocalSearchResult> {
     this.logger.debug(`Local Search Tool Input: ${JSON.stringify(input)}`);
 
     this.validateInput(input);
@@ -39,12 +51,16 @@ export class LocalSearchService implements McpToolWithDefinition<LocalSearchPara
 
     try {
       const result = await this.yahooRepository.localSearch(query);
-      
-      this.logger.debug(`Local Search Tool Output: Found ${result.items?.length || 0} items`);
+
+      this.logger.debug(
+        `Local Search Tool Output: Found ${result.items?.length || 0} items`,
+      );
       return { ...result, nextOffset };
-      
     } catch (error) {
-      this.logger.error(`Local Search Tool Error: ${error instanceof Error ? error.message : String(error)}`, error);
+      this.logger.error(
+        `Local Search Tool Error: ${error instanceof Error ? error.message : String(error)}`,
+        error,
+      );
       throw error;
     }
   }
@@ -61,14 +77,27 @@ export class LocalSearchService implements McpToolWithDefinition<LocalSearchPara
   /**
    * ページング関連のパラメータを計算
    */
-  private calculatePagingParams(input: LocalSearchParams): { offset: number; nextOffset?: number; pageSize: number } {
+  private calculatePagingParams(input: LocalSearchParams): {
+    offset: number;
+    nextOffset?: number;
+    pageSize: number;
+  } {
     const pageSize = input.results && input.results > 0 ? input.results : 10;
     let offset = input.offset ?? 0;
     let nextOffset: number | undefined;
 
     if (input.sessionId) {
-      const hash = JSON.stringify({ q: input.query, lat: input.lat, lng: input.lng });
-      const r = getAndAdvance({ sessionId: input.sessionId, hash }, pageSize, !!input.reset, input.offset);
+      const hash = JSON.stringify({
+        q: input.query,
+        lat: input.lat,
+        lng: input.lng,
+      });
+      const r = getAndAdvance(
+        { sessionId: input.sessionId, hash },
+        pageSize,
+        !!input.reset,
+        input.offset,
+      );
       offset = r.offset;
       nextOffset = r.nextOffset;
     }
@@ -79,7 +108,12 @@ export class LocalSearchService implements McpToolWithDefinition<LocalSearchPara
   /**
    * 検索クエリを構築
    */
-  private buildSearchQuery(input: LocalSearchParams, yahooAppId: string, offset: number, pageSize: number): LocalSearchQuery {
+  private buildSearchQuery(
+    input: LocalSearchParams,
+    yahooAppId: string,
+    offset: number,
+    pageSize: number,
+  ): LocalSearchQuery {
     return {
       appid: yahooAppId,
       output: 'json',
@@ -87,7 +121,7 @@ export class LocalSearchService implements McpToolWithDefinition<LocalSearchPara
       lat: input.lat,
       lon: input.lng,
       start: offset + 1,
-      results: pageSize
+      results: pageSize,
     };
   }
 
@@ -98,19 +132,26 @@ export class LocalSearchService implements McpToolWithDefinition<LocalSearchPara
   getDefinition(): McpToolDefinition {
     return {
       name: this.name,
-      description: 'Yahoo!ローカルサーチAPI - キーワードまたは座標でローカル検索（10件ページング対応）',
+      description:
+        'Yahoo!ローカルサーチAPI - キーワードまたは座標でローカル検索（10件ページング対応）',
       inputSchema: {
         type: 'object',
         properties: {
           query: { type: 'string', description: 'キーワード検索文字列' },
           lat: { type: 'number', description: '緯度（座標検索の場合）' },
           lng: { type: 'number', description: '経度（座標検索の場合）' },
-          sessionId: { type: 'string', description: 'ページング継続用セッションID' },
+          sessionId: {
+            type: 'string',
+            description: 'ページング継続用セッションID',
+          },
           offset: { type: 'number', description: '明示的オフセット指定' },
           reset: { type: 'boolean', description: 'ページングリセット' },
-          results: { type: 'number', description: 'カスタムページサイズ（デフォルト10）' }
-        }
-      }
+          results: {
+            type: 'number',
+            description: 'カスタムページサイズ（デフォルト10）',
+          },
+        },
+      },
     };
   }
 }
