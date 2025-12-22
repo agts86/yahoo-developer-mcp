@@ -7,8 +7,8 @@ FROM node:22-alpine AS builder
 # 作業ディレクトリを設定
 WORKDIR /app
 
-# pnpmをグローバルインストール
-RUN npm install -g pnpm
+# pnpmをグローバルインストール（package.json の engines.pnpm に合わせる）
+RUN npm install -g pnpm@10.26
 
 # package.jsonとpnpm-lock.yamlを先にコピー（キャッシュ効率化）
 COPY package.json pnpm-lock.yaml ./
@@ -28,8 +28,8 @@ FROM node:22-alpine AS production
 # 作業ディレクトリを設定
 WORKDIR /app
 
-# pnpmをグローバルインストール
-RUN npm install -g pnpm
+# pnpmをグローバルインストール（package.json の engines.pnpm に合わせる）
+RUN npm install -g pnpm@10.26
 
 # package.jsonとpnpm-lock.yamlをコピー
 COPY package.json pnpm-lock.yaml ./
