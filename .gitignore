@@ -50,3 +50,7 @@ Thumbs.db
 *.tmp
 *.temp
 .cache/
+
+# Claude Code personal settings
+CLAUDE.local.md
+.claude/settings.local.json
