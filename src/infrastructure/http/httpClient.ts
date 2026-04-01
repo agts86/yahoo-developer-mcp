@@ -1,20 +1,12 @@
-import axios from 'axios';
 import type { IHttpClient, HttpRequestOptions } from './IHttpClient.js';
 import { HttpError } from './IHttpClient.js';
 
-/**
- * ベースURLにクエリパラメータを付加して完全なURLを構築します
- * @param base - ベースURL
- * @param query - クエリパラメータのオブジェクト
- * @returns 完全なURL文字列
- */
 function buildUrl<TQuery extends object>(base: string, query?: TQuery): string {
   if (!query || Object.keys(query).length === 0) return base;
 
   const params = new URLSearchParams();
   for (const [k, v] of Object.entries(query as Record<string, unknown>)) {
     if (v != null) {
-      // nullish coalescing: null と undefined を同時にチェック
       params.set(k, convertToString(v));
     }
   }
@@ -23,10 +15,6 @@ function buildUrl<TQuery extends object>(base: string, query?: TQuery): string {
   return base + sep + params.toString();
 }
 
-/**
- * 値を文字列に安全に変換します
- * nullとundefinedは除外済みなので、実際の値のみを変換
- */
 function convertToString(value: unknown): string {
   if (typeof value === 'string') return value;
   if (typeof value === 'number' || typeof value === 'boolean')
@@ -34,112 +22,37 @@ function convertToString(value: unknown): string {
   return JSON.stringify(value);
 }
 
-/**
- * Axiosを用いたHTTPクライアント実装
- */
 export class HttpClient implements IHttpClient {
-  /**
-   * 実際のHTTP送信を行う共通処理
-   */
   private async send<T>(config: {
     url: string;
     method: 'GET' | 'POST' | 'PUT' | 'DELETE';
     headers?: Record<string, string>;
-    data?: unknown;
+    body?: string;
   }): Promise<T> {
+    let res: Response;
     try {
-      const res = await axios.request({
-        ...config,
-        validateStatus: () => true,
+      res = await fetch(config.url, {
+        method: config.method,
+        headers: config.headers,
+        body: config.body,
       });
-
-      this.validateResponse(res, config.url);
-      return res.data as T;
     } catch (err: unknown) {
-      const error = this.handleRequestError(err, config.url);
-      throw error;
+      const message = err instanceof Error ? err.message : String(err);
+      throw new HttpError(0, `Network error for ${config.url}: ${message}`);
     }
-  }
 
-  /**
-   * レスポンスのステータスコードを検証
-   */
-  private validateResponse(
-    res: { status: number; data: unknown },
-    url: string,
-  ): void {
     if (res.status < 200 || res.status >= 300) {
+      const details: unknown = await (res.json() as Promise<unknown>).catch(() => undefined);
       throw new HttpError(
         res.status,
-        `HTTP ${res.status} for ${url}`,
-        res.data,
+        `HTTP ${res.status} for ${config.url}`,
+        details,
       );
     }
+
+    return res.json() as Promise<T>;
   }
 
-  /**
-   * リクエストエラーを処理
-   */
-  private handleRequestError(err: unknown, url: string): HttpError {
-    if (err instanceof HttpError) return err;
-
-    const axiosError = this.parseAxiosError(err);
-    const httpError = this.createHttpErrorFromAxios(axiosError, url);
-    return httpError;
-  }
-
-  /**
-   * Axiosエラーをパースして必要な情報を取得
-   */
-  private parseAxiosError(err: unknown): {
-    status: number;
-    details: unknown;
-    reason: string;
-  } {
-    const axiosErr = this.extractAxiosErrorData(err);
-
-    return {
-      status: axiosErr?.response?.status ?? 0,
-      details: axiosErr?.response?.data,
-      reason: axiosErr?.message ?? String(err),
-    };
-  }
-
-  /**
-   * Axiosエラーのデータを抽出
-   */
-  private extractAxiosErrorData(
-    err: unknown,
-  ): {
-    response?: { status?: number; data?: unknown };
-    message?: string;
-  } | null {
-    const isAxiosError = err && typeof err === 'object' && 'response' in err;
-    return isAxiosError
-      ? (err as {
-          response?: { status?: number; data?: unknown };
-          message?: string;
-        })
-      : null;
-  }
-
-  /**
-   * AxiosエラーからHttpErrorを生成
-   */
-  private createHttpErrorFromAxios(
-    error: { status: number; details: unknown; reason: string },
-    url: string,
-  ): HttpError {
-    return new HttpError(
-      error.status,
-      `HTTP error for ${url}: ${error.reason}`,
-      error.details,
-    );
-  }
-
-  /**
-   * GETリクエストを送信します
-   */
   async get<T = unknown, TQuery extends object = Record<string, unknown>>(
     url: string,
     options: Omit<HttpRequestOptions<TQuery>, 'method'> = {},
@@ -152,9 +65,6 @@ export class HttpClient implements IHttpClient {
     });
   }
 
-  /**
-   * POSTリクエストを送信します
-   */
   async post<
     T = unknown,
     TBody = unknown,
@@ -172,7 +82,7 @@ export class HttpClient implements IHttpClient {
         'Content-Type': 'application/json',
         ...((options.headers as Record<string, string>) || {}),
       },
-      data: body,
+      body: JSON.stringify(body),
     });
   }
 }
