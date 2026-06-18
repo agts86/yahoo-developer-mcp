@@ -2,7 +2,7 @@
 # マルチステージビルドで最適化
 
 # ビルドステージ
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 
 # 作業ディレクトリを設定
 WORKDIR /app
@@ -23,7 +23,7 @@ COPY . .
 RUN pnpm run build
 
 # 本番ステージ
-FROM node:22-alpine AS production
+FROM node:24-alpine AS production
 
 # 作業ディレクトリを設定
 WORKDIR /app
