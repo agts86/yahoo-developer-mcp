@@ -32,6 +32,9 @@ async function bootstrap(): Promise<void> {
     setupSwagger(app);
   }
 
+  // SIGTERM/SIGINT受信時にFastifyを安全にクローズ（Vercelのスケールダウン対応）
+  app.enableShutdownHooks();
+
   const port = process.env.PORT || 3000;
   const host = process.env.HOST || '::'; // IPv4/IPv6両対応のためデフォルトは"::"
   await app.listen(port, host);

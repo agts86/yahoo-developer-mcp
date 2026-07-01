@@ -56,3 +56,4 @@ Thumbs.db
 # Claude Code personal settings
 CLAUDE.local.md
 .claude/settings.local.json
+.vercel

@@ -96,6 +96,30 @@ docker compose exec app pnpm test
 
 3. MCP クライアントを再起動して MCP ツールを使用開始
 
+### Vercel デプロイ先を使う場合
+
+Vercel 上の URL を MCP クライアントへ設定する場合も、エンドポイントは `/mcp/stream` です。
+
+```toml
+[mcp_servers.yahoo-developer]
+url = "https://your-deployment.vercel.app/mcp/stream"
+enabled = true
+http_headers = { "Authorization" = "Bearer {取得済みトークン}" }
+```
+
+Codex で `Unexpected content type: text/html` が出る場合、MCP サーバーではなく Vercel の保護ページや別アプリの HTML に到達している可能性があります。以下を確認してください。
+
+- URL が `/mcp/stream` で終わっていること
+- `curl -i https://your-deployment.vercel.app/mcp` が JSON を返すこと
+- Preview Deployment などで Deployment Protection が有効な場合は、Vercel の Protection Bypass for Automation を発行し、`x-vercel-protection-bypass` ヘッダーを追加すること
+
+```toml
+[mcp_servers.yahoo-developer]
+url = "https://your-deployment.vercel.app/mcp/stream"
+enabled = true
+http_headers = { "Authorization" = "Bearer {取得済みトークン}", "x-vercel-protection-bypass" = "{Vercel の bypass secret}" }
+```
+
 ## MCP ツール概要
 
 | Tool            | Name           | Params                                              | 説明                                             |

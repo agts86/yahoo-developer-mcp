@@ -1,0 +1,53 @@
+# Vercel（Container Images / Fluid compute）用 本番環境Dockerfile
+# マルチステージビルドで最適化
+# 参考: https://vercel.com/docs/functions/container-images
+
+# ビルドステージ
+FROM node:24-alpine AS builder
+
+# 作業ディレクトリを設定
+WORKDIR /app
+
+# pnpmをグローバルインストール（package.json の engines.pnpm に合わせる）
+RUN npm install -g pnpm@10.26
+
+# package.jsonとpnpm-lock.yamlを先にコピー（キャッシュ効率化）
+COPY package.json pnpm-lock.yaml ./
+
+# 依存関係をインストール（本番用のみ）
+RUN pnpm install --frozen-lockfile
+
+# ソースコードをコピー
+COPY . .
+
+# TypeScriptをJavaScriptにビルド
+RUN pnpm run build
+
+# 本番ステージ
+FROM node:24-alpine AS production
+
+# 作業ディレクトリを設定
+WORKDIR /app
+
+# pnpmをグローバルインストール（package.json の engines.pnpm に合わせる）
+RUN npm install -g pnpm@10.26
+
+# package.jsonとpnpm-lock.yamlをコピー
+COPY package.json pnpm-lock.yaml ./
+
+# 本番依存関係のみインストール
+RUN pnpm install --frozen-lockfile --prod
+
+# ビルドステージからビルド結果をコピー
+COPY --from=builder /app/dist ./dist
+
+# Vercelのコンテナはデフォルトポート80で待ち受ける（PORT環境変数で上書き可能）
+EXPOSE 80
+
+# ヘルスチェック（Vercel側では未使用だがローカル/他基盤向けに保持）
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:' + (process.env.PORT || 80) + '/mcp', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+
+# 本番環境での起動コマンド
+# exec でnodeをPID 1にし、Vercelのスケールダウン時のSIGTERMを確実に受け取る
+CMD ["sh", "-c", "PORT=${PORT:-80} exec node dist/main.js"]
