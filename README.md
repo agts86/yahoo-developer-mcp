@@ -55,6 +55,8 @@ docker compose exec app pnpm test
 
 ## MCP クライアントでの使用
 
+### HTTP モード（推奨）
+
 1. HTTPサーバーを起動:
 
    ```bash
@@ -119,6 +121,41 @@ url = "https://your-deployment.vercel.app/mcp/stream"
 enabled = true
 http_headers = { "Authorization" = "Bearer {取得済みトークン}", "x-vercel-protection-bypass" = "{Vercel の bypass secret}" }
 ```
+
+### stdio モード
+
+HTTPサーバーを立てずに、MCP クライアントからプロセスを直接起動する方式です。Yahoo App ID はリクエストヘッダーではなく環境変数 `YAHOO_APP_ID` から解決されます（プロセス全体で単一のキーを使用）。
+
+1. プロジェクトをビルド:
+
+   ```bash
+   pnpm build
+   ```
+
+2. `.env` に `YAHOO_APP_ID` を設定（`.env.example` を参照）:
+
+   ```
+   YAHOO_APP_ID=your_app_id_here
+   ```
+
+3. MCP クライアントの設定に以下を追加（Claude Desktop の `claude_desktop_config.json` 等）:
+
+   ```json
+   {
+     "mcpServers": {
+       "yahoo-developer": {
+         "command": "node",
+         "args": ["--env-file=.env", "dist/main.js"],
+         "cwd": "/path/to/yahoo-developer-mcp",
+         "env": {
+           "MCP_MODE": "stdio"
+         }
+       }
+     }
+   }
+   ```
+
+   動作確認だけしたい場合は `pnpm start:stdio`（開発時は `pnpm dev:stdio`）でも起動できます。
 
 ## MCP ツール概要
 

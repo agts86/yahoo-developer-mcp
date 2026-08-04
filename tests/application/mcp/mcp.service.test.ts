@@ -4,6 +4,7 @@ import { McpService } from '../../../src/application/mcp/mcp.service.js';
 describe('McpService', () => {
   const mockConfigService = {
     extractYahooApiKey: jest.fn(),
+    getYahooApiKeyFromEnv: jest.fn(),
   };
 
   const localSearchTool = {
@@ -177,6 +178,20 @@ describe('McpService', () => {
     expect(request.raw.headers['content-type']).toBe('application/json');
     expect(reply.hijack).toHaveBeenCalled();
     expect(runSpy).toHaveBeenCalledWith(request, reply, server, transport);
+  });
+
+  test('startStdioServer で環境変数からYahoo API Keyを解決しstdioサーバーを起動する', async () => {
+    mockConfigService.getYahooApiKeyFromEnv.mockReturnValue('env-app-id');
+    const server = { connect: jest.fn().mockResolvedValue(undefined) };
+    const createStdioMcpServerSpy = jest
+      .spyOn(service as any, 'createStdioMcpServer')
+      .mockReturnValue(server);
+
+    await service.startStdioServer();
+
+    expect(mockConfigService.getYahooApiKeyFromEnv).toHaveBeenCalled();
+    expect(createStdioMcpServerSpy).toHaveBeenCalledWith('env-app-id');
+    expect(server.connect).toHaveBeenCalled();
   });
 
   test('runStreamableHandling で例外時に 500 を返しクリーンアップする', async () => {

@@ -2,6 +2,7 @@ import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import type { ToolCallback } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
@@ -35,7 +36,7 @@ import {
 
 /**
  * MCPサーバー統合サービス
- * HTTPモード専用のMCPツール実行サービス
+ * HTTP/stdio両モードのMCPツール実行サービス
  */
 @Injectable()
 export class McpService {
@@ -331,6 +332,25 @@ export class McpService {
     };
   }
 
+  // --- stdio MCP プロトコル処理メソッド ---
+
+  /**
+   * stdioモードでMCPサーバーを起動する
+   * Yahoo API Keyは環境変数 YAHOO_APP_ID から解決する
+   */
+  async startStdioServer(): Promise<void> {
+    const yahooAppId = this.configService.getYahooApiKeyFromEnv();
+    const server = this.createStdioMcpServer(yahooAppId);
+    const transport = new StdioServerTransport();
+
+    transport.onerror = (error: Error): void => {
+      this.logger.error(`Stdio transport error: ${error.message}`, error.stack);
+    };
+
+    await server.connect(transport);
+    this.logger.log('Yahoo Developer MCP Server (stdio) started');
+  }
+
   /**
    * Codexが期待する Streamable HTTP MCP エンドポイントを処理
    * @param request - Fastifyリクエスト
@@ -500,17 +520,21 @@ export class McpService {
   }
 
   /**
-   * streamable HTTP 用にツールを登録
+   * streamable HTTP / stdio 共通のツール登録
    */
   private registerStreamableTools(
     server: McpServer,
     schemas: ReturnType<McpService['getStreamableSchemas']>,
+    resolveYahooAppId: (
+      extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
+    ) => string,
   ): void {
     this.registerStreamableTool(
       server,
       'localSearch',
       'Yahoo!ローカルサーチAPI - キーワードまたは座標でローカル検索（10件ページング対応）',
       schemas.localSearch,
+      resolveYahooAppId,
       async (input, yahooAppId) =>
         await this.localSearchService.execute(input, yahooAppId),
     );
@@ -520,6 +544,7 @@ export class McpService {
       'geocode',
       'Yahoo!ジオコーダAPI - 住所文字列から座標を取得',
       schemas.geocode,
+      resolveYahooAppId,
       async (input, yahooAppId) =>
         await this.geocodeService.execute(input, yahooAppId),
     );
@@ -529,6 +554,7 @@ export class McpService {
       'reverseGeocode',
       'Yahoo!リバースジオコーダAPI - 座標から住所を取得',
       schemas.reverseGeocode,
+      resolveYahooAppId,
       async (input, yahooAppId) =>
         await this.reverseGeocodeService.execute(input, yahooAppId),
     );
@@ -545,6 +571,9 @@ export class McpService {
     name: string,
     description: string,
     inputSchema: TInputSchema,
+    resolveYahooAppId: (
+      extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
+    ) => string,
     executor: (input: TInput, yahooAppId: string) => Promise<unknown>,
   ): void {
     const callback = (async (
@@ -554,6 +583,7 @@ export class McpService {
       await this.executeStreamableTool(
         args as TInput,
         extra,
+        resolveYahooAppId,
         executor,
       )) as ToolCallback<TInputSchema>;
 
@@ -565,13 +595,37 @@ export class McpService {
    * @returns MCPサーバーインスタンス
    */
   private createStreamableMcpServer(): McpServer {
+    return this.buildMcpServer((extra) =>
+      this.extractYahooApiKeyFromExtra(extra),
+    );
+  }
+
+  /**
+   * stdio用のMCPサーバーを生成し、既存ツールを登録
+   * @param yahooAppId - 環境変数から取得したYahoo API Key
+   * @returns MCPサーバーインスタンス
+   */
+  private createStdioMcpServer(yahooAppId: string): McpServer {
+    return this.buildMcpServer(() => yahooAppId);
+  }
+
+  /**
+   * MCPサーバーを生成し、Yahoo API Keyの解決方法を差し替え可能な形でツールを登録する
+   * @param resolveYahooAppId - リクエスト付加情報からYahoo API Keyを解決する関数
+   * @returns MCPサーバーインスタンス
+   */
+  private buildMcpServer(
+    resolveYahooAppId: (
+      extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
+    ) => string,
+  ): McpServer {
     const server = new McpServer({
       name: 'yahoo-developer-mcp',
       version: '0.1.0',
     });
 
     const schemas = this.getStreamableSchemas();
-    this.registerStreamableTools(server, schemas);
+    this.registerStreamableTools(server, schemas, resolveYahooAppId);
     return server;
   }
 
@@ -596,19 +650,23 @@ export class McpService {
   }
 
   /**
-   * ツール実行の共通処理 (Streamable HTTP向け)
+   * ツール実行の共通処理 (Streamable HTTP / stdio 共通)
    * @param input ツール入力
    * @param extra リクエスト付加情報
+   * @param resolveYahooAppId リクエスト付加情報からYahoo API Keyを解決する関数
    * @param executor 実際のツール実行関数
    * @returns MCPツール実行結果
    */
   private async executeStreamableTool<TInput>(
     input: TInput,
     extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
+    resolveYahooAppId: (
+      extra: RequestHandlerExtra<ServerRequest, ServerNotification>,
+    ) => string,
     executor: (toolInput: TInput, yahooAppId: string) => Promise<unknown>,
   ): Promise<CallToolResult> {
     try {
-      const yahooAppId = this.extractYahooApiKeyFromExtra(extra);
+      const yahooAppId = resolveYahooAppId(extra);
       const result = await executor(input, yahooAppId);
 
       return {

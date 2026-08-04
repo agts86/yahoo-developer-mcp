@@ -27,4 +27,15 @@ export class AppConfigProvider {
     }
     throw new Error('Authorization header with Bearer token is required');
   }
+
+  /** 環境変数からYahoo API Keyを取得（stdioモード用） */
+  getYahooApiKeyFromEnv(): string {
+    const appId = this.configService.get<string>('YAHOO_APP_ID');
+    if (!appId) {
+      throw new Error(
+        'YAHOO_APP_ID environment variable is required in stdio mode',
+      );
+    }
+    return appId;
+  }
 }
